@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
     let status = 200;
     let userId = "";
 
+    let domain = "";
+    let type = "";
+
     try {
         // 1. Auth Check (Ironclad)
         userId = req.headers.get("x-user-id") || "";
@@ -21,7 +24,9 @@ export async function POST(req: NextRequest) {
 
         // 2. Parse Body
         const json = await req.json();
-        const { domain, type } = DnsRequestSchema.parse(json);
+        const parsedBody = DnsRequestSchema.parse(json);
+        domain = parsedBody.domain;
+        type = parsedBody.type;
 
         // 3. Resolve DNS (Danrit Engine)
         let records: unknown[] = [];
