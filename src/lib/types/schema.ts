@@ -87,3 +87,18 @@ export const DnsRequestSchema = z.object({
     domain: z.string().min(1),
     type: z.enum(["A", "MX", "TXT", "NS", "CNAME"]).optional().default("A"),
 });
+
+export interface SharedApiResult {
+    title?: string;
+    content?: string;
+    url?: string;
+    image?: string;
+    records?: unknown[];
+    success?: boolean;
+    error?: string;
+    metadata?: {
+        author?: string;
+        date?: string;
+        [key: string]: unknown;
+    };
+}

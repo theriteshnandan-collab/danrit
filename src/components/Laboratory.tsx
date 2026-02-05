@@ -4,13 +4,14 @@ import { useState } from "react";
 import { Terminal, FileText, Mail, Camera, QrCode, Globe } from "lucide-react";
 import PrecisionLoader from "./PrecisionLoader";
 import DataViewer from "./DataViewer";
+import { SharedApiResult } from "@/lib/types/schema";
 
 type EngineType = "scrape" | "pdf" | "mail" | "shot" | "qr" | "dns";
 
 export default function Laboratory() {
     const [engine, setEngine] = useState<EngineType>("scrape");
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<unknown>(null);
+    const [result, setResult] = useState<SharedApiResult | null>(null);
     const [status, setStatus] = useState<"IDLE" | "RUNNING" | "SUCCESS" | "ERROR">("IDLE");
 
     // Inputs
