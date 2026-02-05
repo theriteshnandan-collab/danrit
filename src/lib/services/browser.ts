@@ -4,12 +4,12 @@ import chromium from '@sparticuz/chromium-min';
 export class BrowserService {
     static async getBrowser() {
         if (process.env.NODE_ENV === 'production') {
-            const executablePath = await chromium.executablePath();
+            const executablePath = await (chromium as any).executablePath();
             return await puppeteer.launch({
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
+                args: (chromium as any).args,
+                defaultViewport: (chromium as any).defaultViewport,
                 executablePath: executablePath,
-                headless: chromium.headless,
+                headless: (chromium as any).headless,
             });
         } else {
             // Local fallback (assumes local Chromium is available)
