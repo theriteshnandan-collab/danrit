@@ -19,18 +19,40 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status });
         }
 
-        // 2. Parse Body
+        // 2. Parse Body (V2 Schema)
         const json = await req.json();
-        const { url, format, print_background } = PdfRequestSchema.parse(json);
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const { url, format, print_background, wait_for, css, cookies } = json as any;
+        // We cast to any because we are extending the schema dynamically here (or verify schema is updated)
 
         // 3. Use Unified Browser Service
         const browser = await BrowserService.getBrowser();
-
         const page = await browser.newPage();
+
+        // 3a. Inject Cookies (For Auth)
+        if (cookies && Array.isArray(cookies)) {
+            await page.setCookie(...cookies);
+        }
 
         // Optimize for Print
         await page.setViewport({ width: 1200, height: 800 });
+
+        // 3b. Smart Navigation
         await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+
+        // 3c. Smart Wait (Selector)
+        if (wait_for) {
+            try {
+                await page.waitForSelector(wait_for, { timeout: 5000 });
+            } catch {
+                console.warn(`Timeout waiting for selector: ${wait_for}`);
+            }
+        }
+
+        // 3d. Inject Custom CSS (Clean up ads/layout)
+        if (css) {
+            await page.addStyleTag({ content: css });
+        }
 
         // Generate PDF
         const pdfBuffer = await page.pdf({

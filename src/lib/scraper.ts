@@ -32,11 +32,11 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
 
         const page = await browser.newPage();
 
-        // Set generic user agent to avoid basic blocking
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+        // 1. Stealth Mode: Set realistic User-Agent (Fallback if plugin misses)
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        // Navigate
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+        // 2. Smart Navigation: 'domcontentloaded' is faster. AdBlocker cleans the noise.
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
         // Extract raw HTML
         const html = await page.content();

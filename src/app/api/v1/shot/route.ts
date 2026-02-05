@@ -25,14 +25,15 @@ export async function POST(req: NextRequest) {
 
         // 3. Use Unified Browser Service
         const browser = await BrowserService.getBrowser();
-
         const page = await browser.newPage();
 
-        // Optimize Viewport
-        await page.setViewport({ width, height });
+        // 3a. Retina Mode (High DPI)
+        await page.setViewport({ width, height, deviceScaleFactor: 2 });
+
+        // 3b. Smart Navigation
         await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
 
-        // Capture Screenshot
+        // Screenshot
         const buffer = await page.screenshot({
             fullPage: full_page,
             type: "png",

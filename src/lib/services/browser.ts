@@ -1,9 +1,15 @@
-import puppeteer, { Viewport } from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker-puppeteer-extra';
+
+// 1. Configure Plugins (The "Ghost" Mode)
+puppeteer.use(StealthPlugin());
+puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
 interface ChromiumConfig {
     args: string[];
-    defaultViewport: Viewport;
+    defaultViewport: { width: number; height: number };
     executablePath: () => Promise<string>;
     headless: boolean | "shell";
 }
@@ -20,16 +26,16 @@ export class BrowserService {
                 : chromiumConfig.headless;
 
             return await puppeteer.launch({
-                args: chromiumConfig.args,
+                args: [...chromiumConfig.args, '--hide-scrollbars', '--disable-web-security'],
                 defaultViewport: chromiumConfig.defaultViewport,
                 executablePath: executablePath,
                 headless: headlessMode as boolean | "shell",
+                ignoreHTTPSErrors: true,
             });
         } else {
-            // Local fallback (assumes local Chromium is available)
-            // We use the standard 'puppeteer' package which includes chromium locally
-            const localPuppeteer = await import('puppeteer');
-            return await localPuppeteer.launch({
+            // Local fallback
+            // Note: puppeteer-extra automatically uses the installed 'puppeteer' package locally
+            return await puppeteer.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']
             });
