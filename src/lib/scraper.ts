@@ -69,9 +69,9 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
         console.log(`✅ Scraped: ${article.title}`);
 
         return {
-            title: article.title,
+            title: article.title || 'Untitled',
             content: finalContent,
-            html: options.format === 'html' ? article.content : undefined,
+            html: options.format === 'html' ? (article.content || '') : undefined,
             metadata
         };
 
