@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         if (error instanceof z.ZodError) {
             status = 400;
             errorMessage = "Invalid Input";
-            errorDetails = error.errors;
+            errorDetails = error.issues;
         }
 
         // Log Failure

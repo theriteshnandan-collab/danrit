@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         if (error instanceof z.ZodError) {
             status = 400;
             errorMessage = "Invalid Input";
-            errorDetails = error.errors;
+            errorDetails = error.issues;
         } else if ((error as { code?: string }).code?.startsWith("ENODATA") || (error as { code?: string }).code?.startsWith("ENOTFOUND")) {
             status = 404;
             errorMessage = "Records Not Found";
