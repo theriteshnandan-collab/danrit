@@ -55,31 +55,21 @@ export function BentoGrid() {
             >
                 <Card className="bg-transparent border-none shadow-none">
                     <CardHeader className="pl-0 pb-0">
-                        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white uppercase opacity-90">
+                        <motion.h1
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 1, ease: "circOut" }}
+                            className="text-7xl md:text-9xl font-black tracking-tighter text-white uppercase opacity-100"
+                        >
                             Danrit<span className="text-blue-600">.</span>
-                        </h1>
-                        <p className="text-xl text-zinc-400 max-w-2xl font-mono mt-4 border-l-2 border-blue-600 pl-4">
+                        </motion.h1>
+                        <p className="text-2xl text-zinc-400 max-w-3xl font-mono mt-6 border-l-4 border-blue-600 pl-6 tracking-wide">
                             THE UNIVERSAL API PROTOCOL. <br />
                             INDUSTRIAL GRADE TOOLS FOR NEXT-GEN BUILDERS.
                         </p>
                     </CardHeader>
-                    <CardContent className="pl-0 pt-8 flex gap-4">
-                        <Button
-                            variant="default"
-                            size="lg"
-                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-none border border-transparent font-bold tracking-widest text-xs"
-                            onClick={() => router.push('/dashboard')}
-                        >
-                            ACCESS CONSOLE <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="border-zinc-800 text-zinc-300 hover:text-white bg-transparent rounded-none font-mono text-xs uppercase"
-                        >
-                            Documentation
-                        </Button>
-                    </CardContent>
+                    {/* BUTTONS REMOVED FOR CLEANER AESTHETIC */}
+                    <CardContent className="pl-0 pt-8" />
                 </Card>
             </motion.div>
 
