@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import GlobeJS from "react-globe.gl";
+import GlobeJS, { GlobeMethods } from "react-globe.gl";
 
 export default function Globe() {
     // Correctly typing the ref to match GlobeJS expectations
-    const globeRef = useRef<any>(undefined);
+    const globeRef = useRef<GlobeMethods | undefined>(undefined);
     const [size, setSize] = useState([0, 0]);
 
     useEffect(() => {
