@@ -5,7 +5,7 @@ interface ChromiumConfig {
     args: string[];
     defaultViewport: Viewport;
     executablePath: () => Promise<string>;
-    headless: boolean | "new";
+    headless: boolean | "shell";
 }
 
 export class BrowserService {
@@ -13,11 +13,17 @@ export class BrowserService {
         if (process.env.NODE_ENV === 'production') {
             const chromiumConfig = (chromium as unknown) as ChromiumConfig;
             const executablePath = await chromiumConfig.executablePath();
+
+            // Map "new" to true if the types only expect boolean | "shell"
+            const headlessMode = (chromiumConfig.headless as unknown) === "new"
+                ? true
+                : chromiumConfig.headless;
+
             return await puppeteer.launch({
                 args: chromiumConfig.args,
                 defaultViewport: chromiumConfig.defaultViewport,
                 executablePath: executablePath,
-                headless: chromiumConfig.headless,
+                headless: headlessMode as boolean | "shell",
             });
         } else {
             // Local fallback (assumes local Chromium is available)
