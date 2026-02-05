@@ -1,42 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { UsageService } from "@/lib/services/usage";
 import { MailRequestSchema } from "@/lib/types/schema";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_123456789"); // Default to prevent crash if not set
+// Initialize Drivers
+const resend = new Resend(process.env.RESEND_API_KEY || "re_123456789");
 
 export async function POST(req: NextRequest) {
     const startTime = performance.now();
     let status = 200;
-    let userId = "";
+
+    // Auth Check: Middleware now injects x-user-id from Key OR Session
+    const userId = req.headers.get("x-user-id") || "";
+
+    // Safety Fallback: If middleware fails to block unauthorized requests (unlikely), block here.
+    // However, we strictly rely on middleware for access control now.
+    // But for non-middleware environments (local?), we might want a check.
+    if (!userId) {
+        return NextResponse.json({ error: "Unauthorized: No User ID identified" }, { status: 401 });
+    }
 
     try {
-        // 1. Auth Check (Ironclad)
-        userId = req.headers.get("x-user-id") || "";
-        if (!userId) {
-            status = 401;
-            return NextResponse.json({ error: "Unauthorized" }, { status });
-        }
-
-        // 2. Parse Body
+        // 1. Parse Body
         const json = await req.json();
         const { to, subject, html, from_name } = MailRequestSchema.parse(json);
 
-        // 3. Send Email (Danrit Engine)
-        if (!process.env.RESEND_API_KEY) {
-            throw new Error("RESEND_API_KEY is not configured.");
-        }
+        // 2. Select Driver
+        const driver = process.env.MAIL_DRIVER || "resend"; // 'resend' | 'smtp'
+        let resultData = {};
 
-        const { data, error } = await resend.emails.send({
-            from: `${from_name || "Danrit"} <onboarding@resend.dev>`, // Default Resend Domain
-            to: [to],
-            subject: subject,
-            html: html,
-        });
+        // 3. Execute Send
+        if (driver === "smtp") {
+            // ZERO PRICE MODE (Nodemailer)
+            if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+                throw new Error("SMTP Configuration Missing (HOST, USER, PASS)");
+            }
 
-        if (error) {
-            throw new Error(error.message);
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT) || 587,
+                secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            const info = await transporter.sendMail({
+                from: `"${from_name || "Danrit"}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+                to: to,
+                subject: subject,
+                html: html,
+            });
+
+            resultData = { id: info.messageId, status: "sent", provider: "smtp" };
+
+        } else {
+            // RESEND MODE (Default)
+            if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured.");
+
+            const { data, error } = await resend.emails.send({
+                from: `${from_name || "Danrit"} <onboarding@resend.dev>`,
+                to: [to],
+                subject: subject,
+                html: html,
+            });
+
+            if (error) throw new Error(error.message);
+            resultData = { id: data?.id, status: "sent", provider: "resend" };
         }
 
         // 4. Log Usage (2 Credits for Mail)
@@ -52,13 +85,11 @@ export async function POST(req: NextRequest) {
         // 5. Return Success
         return NextResponse.json({
             success: true,
-            data: {
-                id: data?.id,
-                status: "sent"
-            },
+            data: resultData,
             meta: {
                 duration_ms: duration,
-                credits_used: 2
+                credits_used: 2,
+                driver: driver
             }
         });
 
