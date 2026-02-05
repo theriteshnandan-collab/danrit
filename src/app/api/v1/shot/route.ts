@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import puppeteer from "puppeteer";
 import { UsageService } from "@/lib/services/usage";
 import { ShotRequestSchema } from "@/lib/types/schema";
+import { BrowserService } from "@/lib/services/browser";
 
 export const maxDuration = 60;
 
@@ -23,11 +23,8 @@ export async function POST(req: NextRequest) {
         const json = await req.json();
         const { url, width, height, full_page } = ShotRequestSchema.parse(json);
 
-        // 3. Launch Puppeteer (Danrit Engine)
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        // 3. Use Unified Browser Service
+        browser = await BrowserService.getBrowser();
 
         const page = await browser.newPage();
 

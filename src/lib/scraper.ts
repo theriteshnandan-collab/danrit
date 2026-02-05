@@ -1,8 +1,8 @@
 
-import puppeteer from 'puppeteer';
 import { Readability } from '@mozilla/readability';
 import TurndownService from 'turndown';
 import { JSDOM } from 'jsdom';
+import { BrowserService } from './services/browser';
 
 // Initialize Turndown service
 const turndownService = new TurndownService({
@@ -27,11 +27,8 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
     try {
         console.log(`🚀 Launching Scraper for: ${url}`);
 
-        // Launch Puppeteer
-        browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        // Use Unified Browser Service
+        browser = await BrowserService.getBrowser();
 
         const page = await browser.newPage();
 
