@@ -27,9 +27,9 @@ export default function Globe() {
 
     // Simple Arc Data (Server -> Target)
     const arcsData = [
-        { startLat: 37.7749, startLng: -122.4194, endLat: 40.7128, endLng: -74.0060, color: "#FF4F00" }, // SF -> NY
-        { startLat: 51.5074, startLng: -0.1278, endLat: 35.6762, endLng: 139.6503, color: "#3B82F6" },  // London -> Tokyo
-        { startLat: 28.6139, startLng: 77.2090, endLat: -33.8688, endLng: 151.2093, color: "#00E054" } // Delhi -> Sydney
+        { startLat: 37.7749, startLng: -122.4194, endLat: 40.7128, endLng: -74.0060, color: "#E5E5E5" }, // SF -> NY (Platinum)
+        { startLat: 51.5074, startLng: -0.1278, endLat: 35.6762, endLng: 139.6503, color: "#2563EB" },  // London -> Tokyo (Signal Blue)
+        { startLat: 28.6139, startLng: 77.2090, endLat: -33.8688, endLng: 151.2093, color: "#E5E5E5" } // Delhi -> Sydney (Platinum)
     ];
 
     return (
@@ -48,7 +48,7 @@ export default function Globe() {
                     arcDashGap={2}
                     arcDashInitialGap={() => Math.random()}
                     arcDashAnimateTime={2000}
-                    atmosphereColor="#3B82F6"
+                    atmosphereColor="#2563EB"
                     atmosphereAltitude={0.15}
                 />
             )}

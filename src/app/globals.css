@@ -3,32 +3,49 @@
 @tailwind utilities;
 
 :root {
-  /* AEROSPACE PRIME PALETTE */
+  /* OBSIDIAN PROTOCOL - Industrial Luxury */
   --background: #050505;
-  /* Void Black - Matte */
-  --foreground: #F5F5F7;
-  /* Vapor White - High Readability */
+  /* Void Black */
+  --foreground: #E5E5E5;
+  /* Platinum */
 
-  --chrome: #09090b;
-  /* Component Background */
-  --border: #1F1F22;
-  /* Subtle dividers */
+  --card: #0A0A0A;
+  --card-foreground: #FFFFFF;
 
-  /* ACTION */
-  --primary: #FF4F00;
-  /* International Orange */
-  --accent: #3B82F6;
-  /* Electric Blue */
+  --popover: #0A0A0A;
+  --popover-foreground: #FFFFFF;
 
-  /* UTILITY */
-  --success: #00E054;
-  /* Signal Green */
-  --error: #FF3333;
-  /* Critical Red */
+  --primary: #2563EB;
+  /* Signal Blue - Klein International */
+  --primary-foreground: #FFFFFF;
 
-  /* FONT */
-  --font-geist-sans: "Geist Sans", sans-serif;
-  --font-geist-mono: "Geist Mono", monospace;
+  --secondary: #1A1A1A;
+  /* Tungsten */
+  --secondary-foreground: #A1A1AA;
+
+  --muted: #171717;
+  --muted-foreground: #737373;
+
+  --accent: #2563EB;
+  --accent-foreground: #FFFFFF;
+
+  --destructive: #7F1D1D;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #262626;
+  /* Precision 1px */
+  --input: #171717;
+  --ring: #2563EB;
+
+  --radius: 0px;
+  /* Industrial Sharpness */
+
+  /* SPECIAL MATERIALS */
+  --glass: rgba(5, 5, 5, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --font-inter: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @layer base {
@@ -38,34 +55,25 @@
   }
 }
 
-/* CUSTOM SWISS UTILITIES */
 @layer components {
 
-  /* Glassmorphism - The Real Deal */
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  /* Obsidian Glass - High Specular, Low Blur */
+  .glass-obsidian {
+    @apply bg-[var(--glass)] backdrop-blur-md border border-[var(--glass-border)];
   }
 
-  .glass-panel-dark {
-    @apply bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  /* Industrial Border */
+  .border-precision {
+    @apply border border-white/5;
   }
 
-  /* Typography */
-  .text-premier {
-    @apply font-semibold tracking-tight text-white;
+  /* Typography - Swiss Style */
+  .text-display {
+    @apply font-bold tracking-tighter text-white;
   }
 
-  .text-subtle {
-    @apply text-white/40 font-medium;
-  }
-
-  /* Micro-Interactions */
-  .btn-primary {
-    @apply bg-[var(--primary)] text-white font-bold text-[13px] tracking-wide px-5 py-2.5 rounded-[2px] hover:brightness-110 active:translate-y-[1px] transition-all;
-  }
-
-  .btn-secondary {
-    @apply bg-white/5 text-white font-medium text-[13px] border border-white/10 px-5 py-2.5 rounded-[2px] hover:bg-white/10 active:translate-y-[1px] transition-all;
+  .text-label {
+    @apply font-mono text-xs uppercase tracking-widest text-white/40;
   }
 }
 
