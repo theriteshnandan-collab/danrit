@@ -1,0 +1,101 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import puppeteer from "puppeteer";
+import { UsageService } from "@/lib/services/usage";
+import { ShotRequestSchema } from "@/lib/types/schema";
+
+export const maxDuration = 60;
+
+export async function POST(req: NextRequest) {
+    const startTime = performance.now();
+    let status = 200;
+    let userId = "";
+
+    try {
+        // 1. Auth Check (Ironclad)
+        userId = req.headers.get("x-user-id") || "";
+        if (!userId) {
+            status = 401;
+            return NextResponse.json({ error: "Unauthorized" }, { status });
+        }
+
+        // 2. Parse Body
+        const json = await req.json();
+        const { url, width, height, full_page } = ShotRequestSchema.parse(json);
+
+        // 3. Launch Puppeteer (Danrit Engine)
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const page = await browser.newPage();
+
+        // Optimize Viewport
+        await page.setViewport({ width, height });
+        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+
+        // Capture Screenshot
+        const buffer = await page.screenshot({
+            fullPage: full_page,
+            type: "png",
+            encoding: "binary"
+        });
+
+        await browser.close();
+
+        // 4. Log Usage (3 Credits for Shot)
+        const duration = Math.round(performance.now() - startTime);
+        UsageService.logRequest({
+            user_id: userId,
+            endpoint: "/api/v1/shot",
+            method: "POST",
+            status_code: 200,
+            duration_ms: duration,
+        });
+
+        // 5. Return Image (Base64)
+        const base64Image = Buffer.from(buffer).toString('base64');
+
+        return NextResponse.json({
+            success: true,
+            data: {
+                base64: base64Image,
+                mime_type: "image/png",
+                filename: `shot-${Date.now()}.png`
+            },
+            meta: {
+                duration_ms: duration,
+                credits_used: 3
+            }
+        });
+
+    } catch (error) {
+        status = 500;
+        let errorMessage = "Internal Server Error";
+        let errorDetails: any = String(error);
+
+        if (error instanceof z.ZodError) {
+            status = 400;
+            errorMessage = "Invalid Input";
+            errorDetails = error.errors;
+        }
+
+        // Log Failure
+        const duration = Math.round(performance.now() - startTime);
+        if (userId) {
+            UsageService.logRequest({
+                user_id: userId,
+                endpoint: "/api/v1/shot",
+                method: "POST",
+                status_code: status,
+                duration_ms: duration,
+            });
+        }
+
+        return NextResponse.json({
+            error: errorMessage,
+            details: errorDetails
+        }, { status });
+    }
+}

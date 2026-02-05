@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* AEROSPACE PRIME PALETTE */
+  --background: #050505;
+  /* Void Black - Matte */
+  --foreground: #F5F5F7;
+  /* Vapor White - High Readability */
+
+  --chrome: #09090b;
+  /* Component Background */
+  --border: #1F1F22;
+  /* Subtle dividers */
+
+  /* ACTION */
+  --primary: #FF4F00;
+  /* International Orange */
+  --accent: #3B82F6;
+  /* Electric Blue */
+
+  /* UTILITY */
+  --success: #00E054;
+  /* Signal Green */
+  --error: #FF3333;
+  /* Critical Red */
+
+  /* FONT */
+  --font-geist-sans: "Geist Sans", sans-serif;
+  --font-geist-mono: "Geist Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased font-sans selection:bg-[var(--primary)] selection:text-white;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+}
+
+/* CUSTOM SWISS UTILITIES */
+@layer components {
+
+  /* Glassmorphism - The Real Deal */
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .glass-panel-dark {
+    @apply bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  /* Typography */
+  .text-premier {
+    @apply font-semibold tracking-tight text-white;
+  }
+
+  .text-subtle {
+    @apply text-white/40 font-medium;
+  }
+
+  /* Micro-Interactions */
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white font-bold text-[13px] tracking-wide px-5 py-2.5 rounded-[2px] hover:brightness-110 active:translate-y-[1px] transition-all;
+  }
+
+  .btn-secondary {
+    @apply bg-white/5 text-white font-medium text-[13px] border border-white/10 px-5 py-2.5 rounded-[2px] hover:bg-white/10 active:translate-y-[1px] transition-all;
+  }
+}
+
+/* 3D GLOBE OVERRIDES */
+.globe-container canvas {
+  opacity: 0;
+  animation: fadeIn 2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* SCROLLBAR - Minimal */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

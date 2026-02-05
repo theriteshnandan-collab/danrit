@@ -1,0 +1,89 @@
+
+import puppeteer from 'puppeteer';
+import { Readability } from '@mozilla/readability';
+import TurndownService from 'turndown';
+import { JSDOM } from 'jsdom';
+
+// Initialize Turndown service
+const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced'
+});
+
+export interface ScrapeResult {
+    title: string;
+    content: string; // Markdown
+    html?: string;
+    metadata: {
+        author?: string;
+        date?: string;
+        description?: string;
+        image?: string;
+    };
+}
+
+export async function scrapeUrl(url: string, options: { format: 'markdown' | 'html' | 'text' } = { format: 'markdown' }): Promise<ScrapeResult> {
+    let browser = null;
+    try {
+        console.log(`🚀 Launching Scraper for: ${url}`);
+
+        // Launch Puppeteer
+        browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const page = await browser.newPage();
+
+        // Set generic user agent to avoid basic blocking
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+
+        // Navigate
+        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+
+        // Extract raw HTML
+        const html = await page.content();
+
+        // Parse with JSDOM
+        const doc = new JSDOM(html, { url });
+        const reader = new Readability(doc.window.document);
+        const article = reader.parse();
+
+        if (!article) {
+            throw new Error("Failed to parse content from page.");
+        }
+
+        // Extract Metadata
+        const metadata = {
+            author: article.byline || undefined,
+            description: article.excerpt || undefined,
+            date: doc.window.document.querySelector('meta[property="article:published_time"]')?.getAttribute('content') || undefined,
+            image: doc.window.document.querySelector('meta[property="og:image"]')?.getAttribute('content') || undefined
+        };
+
+        // Convert to Markdown if requested
+        let finalContent = article.content;
+        if (options.format === 'markdown') {
+            finalContent = turndownService.turndown(article.content);
+        } else if (options.format === 'text') {
+            finalContent = article.textContent;
+        }
+
+        console.log(`✅ Scraped: ${article.title}`);
+
+        return {
+            title: article.title,
+            content: finalContent,
+            html: options.format === 'html' ? article.content : undefined,
+            metadata
+        };
+
+    } catch (error) {
+        console.error("❌ Scrape Error:", error);
+        throw error;
+    } finally {
+        if (browser) {
+            await browser.close();
+        }
+    }
+}
