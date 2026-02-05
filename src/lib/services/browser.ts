@@ -1,16 +1,9 @@
-import puppeteer from 'puppeteer-core';
+import puppeteer, { Viewport } from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 
 interface ChromiumConfig {
     args: string[];
-    defaultViewport: {
-        width?: number;
-        height?: number;
-        deviceScaleFactor?: number;
-        isMobile?: boolean;
-        hasTouch?: boolean;
-        isLandscape?: boolean;
-    };
+    defaultViewport: Viewport;
     executablePath: () => Promise<string>;
     headless: boolean | "new";
 }
