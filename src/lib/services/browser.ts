@@ -1,15 +1,30 @@
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 
+interface ChromiumConfig {
+    args: string[];
+    defaultViewport: {
+        width?: number;
+        height?: number;
+        deviceScaleFactor?: number;
+        isMobile?: boolean;
+        hasTouch?: boolean;
+        isLandscape?: boolean;
+    };
+    executablePath: () => Promise<string>;
+    headless: boolean | "new";
+}
+
 export class BrowserService {
     static async getBrowser() {
         if (process.env.NODE_ENV === 'production') {
-            const executablePath = await (chromium as any).executablePath();
+            const chromiumConfig = (chromium as unknown) as ChromiumConfig;
+            const executablePath = await chromiumConfig.executablePath();
             return await puppeteer.launch({
-                args: (chromium as any).args,
-                defaultViewport: (chromium as any).defaultViewport,
+                args: chromiumConfig.args,
+                defaultViewport: chromiumConfig.defaultViewport,
                 executablePath: executablePath,
-                headless: (chromium as any).headless,
+                headless: chromiumConfig.headless,
             });
         } else {
             // Local fallback (assumes local Chromium is available)
