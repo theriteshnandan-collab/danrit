@@ -50,8 +50,13 @@ export default function LoginPage() {
     const handleGoogleAuth = async () => {
         setIsLoading(true);
         try {
-            // Dynamic Origin Detection
-            const origin = window.location.origin;
+            // Dynamic Origin Detection with Explicit Production Override
+            let origin = window.location.origin;
+            if (window.location.hostname === "danrit.tech") {
+                origin = "https://danrit.tech";
+            }
+
+            console.log("Auth Redirecting to:", `${origin}/auth/callback`);
 
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
