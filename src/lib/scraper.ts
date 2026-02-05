@@ -59,11 +59,11 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
         };
 
         // Convert to Markdown if requested
-        let finalContent = article.content;
+        let finalContent = article.content || '';
         if (options.format === 'markdown') {
-            finalContent = turndownService.turndown(article.content);
+            finalContent = turndownService.turndown(article.content || '');
         } else if (options.format === 'text') {
-            finalContent = article.textContent;
+            finalContent = article.textContent || '';
         }
 
         console.log(`✅ Scraped: ${article.title}`);
