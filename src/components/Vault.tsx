@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Key, Copy, Plus, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Key, Copy, Plus, AlertTriangle } from "lucide-react";
 import { ApiKey } from "@/lib/types/schema";
 
 export default function Vault() {

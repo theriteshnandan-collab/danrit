@@ -14,7 +14,7 @@ export class BrowserService {
         } else {
             // Local fallback (assumes local Chromium is available)
             // We use the standard 'puppeteer' package which includes chromium locally
-            const localPuppeteer = require('puppeteer');
+            const localPuppeteer = await import('puppeteer');
             return await localPuppeteer.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']

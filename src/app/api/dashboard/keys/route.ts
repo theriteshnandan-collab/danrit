@@ -66,7 +66,7 @@ export async function POST(req: Request) {
             }
         });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Failed to generate key" }, { status: 500 });
     }
 }

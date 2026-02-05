@@ -81,7 +81,7 @@ export default function DashboardPage() {
                             No activity detected. Launch a scrape in the Laboratory.
                         </div>
                     )}
-                    {stats?.recent_logs.map((log: any) => (
+                    {stats?.recent_logs.map((log: { id: string; created_at: string; status_code: number; endpoint: string; duration_ms: number }) => (
                         <div key={log.id} className="px-6 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                             <div className="flex items-center gap-4">
                                 <span className="text-[#666]">

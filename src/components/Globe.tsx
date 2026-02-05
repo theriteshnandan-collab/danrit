@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import GlobeJS from "react-globe.gl";
 
 export default function Globe() {
-    const globeRef = useRef<any>(null);
+    const globeRef = useRef<{
+        pointOfView: (pov: { lat: number; lng: number; altitude: number }) => void;
+        controls: () => {
+            autoRotate: boolean;
+            autoRotateSpeed: number;
+            enableZoom: boolean
+        }
+    } | null>(null);
     const [size, setSize] = useState([0, 0]);
 
     useEffect(() => {

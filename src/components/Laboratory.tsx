@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Play, Terminal, FileText, Mail, Camera, QrCode, Globe } from "lucide-react";
+import { useState } from "react";
+import { Terminal, FileText, Mail, Camera, QrCode, Globe } from "lucide-react";
 import PrecisionLoader from "./PrecisionLoader";
 import DataViewer from "./DataViewer";
 
@@ -10,15 +10,15 @@ type EngineType = "scrape" | "pdf" | "mail" | "shot" | "qr" | "dns";
 export default function Laboratory() {
     const [engine, setEngine] = useState<EngineType>("scrape");
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<unknown>(null);
     const [status, setStatus] = useState<"IDLE" | "RUNNING" | "SUCCESS" | "ERROR">("IDLE");
 
     // Inputs
     const [url, setUrl] = useState("");
-    const [format, setFormat] = useState<"markdown" | "json">("markdown");
+    const [format] = useState<"markdown" | "json">("markdown");
     const [email, setEmail] = useState("");
     const [subject, setSubject] = useState("");
-    const [html, setHtml] = useState("");
+    const [html] = useState("");
     const [qrText, setQrText] = useState("");
     const [domain, setDomain] = useState("");
 
@@ -77,7 +77,7 @@ export default function Laboratory() {
                 setStatus("ERROR");
             }
 
-        } catch (err) {
+        } catch {
             setResult({ error: "Network Failure" });
             setStatus("ERROR");
         } finally {

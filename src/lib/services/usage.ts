@@ -1,6 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { UsageLogSchema } from "@/lib/types/schema";
-import { z } from "zod";
 
 // Initialize Service Role Client (Ironclad: Secure context only)
 const supabase = createClient(
@@ -60,7 +58,7 @@ export class UsageService {
             .order("created_at", { ascending: false })
             .limit(1000);
 
-        const successCount = recentLogs?.filter((l: any) => l.status_code === 200).length || 0;
+        const successCount = recentLogs?.filter((l: { status_code: number }) => l.status_code === 200).length || 0;
         const totalRecent = recentLogs?.length || 1;
         const successRate = (successCount / totalRecent) * 100;
 

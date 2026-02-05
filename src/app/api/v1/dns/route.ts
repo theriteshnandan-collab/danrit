@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         const { domain, type } = DnsRequestSchema.parse(json);
 
         // 3. Resolve DNS (Danrit Engine)
-        let records: any = [];
+        let records: unknown[] = [];
 
         // Map types to dns.promises functions
         switch (type) {
@@ -76,13 +76,13 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         status = 500;
         let errorMessage = "Internal Server Error";
-        let errorDetails: any = String(error);
+        let errorDetails: unknown = String(error);
 
         if (error instanceof z.ZodError) {
             status = 400;
             errorMessage = "Invalid Input";
             errorDetails = error.errors;
-        } else if ((error as any).code?.startsWith("ENODATA") || (error as any).code?.startsWith("ENOTFOUND")) {
+        } else if ((error as { code?: string }).code?.startsWith("ENODATA") || (error as { code?: string }).code?.startsWith("ENOTFOUND")) {
             status = 404;
             errorMessage = "Records Not Found";
             errorDetails = `No ${type} records found for ${domain}`;

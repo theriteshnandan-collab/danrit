@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         status = 500;
         let errorMessage = "Internal Server Error";
-        let errorDetails: any = String(error);
+        let errorDetails: unknown = String(error);
 
         if (error instanceof z.ZodError) {
             status = 400;

@@ -27,7 +27,7 @@ export function useDashboardStats() {
                 } else {
                     setError(json.error || "Failed to fetch stats");
                 }
-            } catch (err) {
+            } catch {
                 setError("Network Error");
             } finally {
                 setLoading(false);

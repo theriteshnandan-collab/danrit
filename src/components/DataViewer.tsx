@@ -5,7 +5,14 @@ import { useState } from "react";
 import { Eye, Code, Copy, Check } from "lucide-react";
 
 interface DataViewerProps {
-    data: any; // The scrape result object
+    data: {
+        title?: string;
+        content?: string;
+        metadata?: {
+            author?: string;
+            date?: string
+        }
+    };
 }
 
 export default function DataViewer({ data }: DataViewerProps) {
@@ -28,8 +35,8 @@ export default function DataViewer({ data }: DataViewerProps) {
                 <button
                     onClick={() => setActiveTab("preview")}
                     className={`px-6 py-3 text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === "preview"
-                            ? "bg-[#1a1a1a] text-white border-r border-[#333]"
-                            : "text-[#666] hover:text-white border-r border-[#333]"
+                        ? "bg-[#1a1a1a] text-white border-r border-[#333]"
+                        : "text-[#666] hover:text-white border-r border-[#333]"
                         }`}
                 >
                     <Eye size={12} />
@@ -38,8 +45,8 @@ export default function DataViewer({ data }: DataViewerProps) {
                 <button
                     onClick={() => setActiveTab("raw")}
                     className={`px-6 py-3 text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === "raw"
-                            ? "bg-[#1a1a1a] text-white border-r border-[#333]"
-                            : "text-[#666] hover:text-white border-r border-[#333]"
+                        ? "bg-[#1a1a1a] text-white border-r border-[#333]"
+                        : "text-[#666] hover:text-white border-r border-[#333]"
                         }`}
                 >
                     <Code size={12} />
