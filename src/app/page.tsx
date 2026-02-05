@@ -79,10 +79,13 @@ export default function LandingPage() {
             </div>
             <div className="p-6 font-mono text-sm text-blue-100/90 overflow-x-auto">
               <p className="mb-2"><span className="text-pink-500">const</span> <span className="text-blue-400">danrit</span> = <span className="text-yellow-400">new</span> <span className="text-green-400">Danrit</span>(process.env.KEY);</p>
+
               <p className="mb-2"><span className="text-zinc-500">// 1. Scrape the entire web</span></p>
-              <p className="mb-4"><span className="text-pink-500">await</span> danrit.scrape.<span className="text-blue-400">extract</span>(<span className="text-green-300">"https://example.com"</span>);</p>
+              <p className="mb-4"><span className="text-pink-500">await</span> danrit.scrape.<span className="text-blue-400">extract</span>(<span className="text-green-300">&quot;https://example.com&quot;</span>);</p>
+
               <p className="mb-2"><span className="text-zinc-500">// 2. Generate PDF Invoice</span></p>
               <p className="mb-4"><span className="text-pink-500">await</span> danrit.pdf.<span className="text-blue-400">create</span>(htmlContent);</p>
+
               <p className="text-zinc-500 animate-pulse">_</p>
             </div>
           </div>
