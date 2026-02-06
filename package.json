@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
-    "@sparticuz/chromium-min": "^143.0.4",
+    "@sparticuz/chromium": "^131.0.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.94.0",
     "@types/jsdom": "^27.0.0",

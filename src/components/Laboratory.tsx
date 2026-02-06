@@ -78,8 +78,9 @@ export default function Laboratory() {
                 setStatus("ERROR");
             }
 
-        } catch {
-            setResult({ error: "Network Failure" });
+        } catch (err) {
+            console.error("Lab Execution Error:", err);
+            setResult({ error: err instanceof Error ? err.message : "Network Failure" });
             setStatus("ERROR");
         } finally {
             setLoading(false);
