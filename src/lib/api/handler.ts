@@ -11,11 +11,29 @@ export function withAuth(handler: ApiHandler) {
             const key = req.headers.get("x-api-key");
 
             if (!key) {
-                // Allow "Laboratory" bypass (Same-Origin / Session)
-                // If the request comes from our own frontend (browser), we might check session.
-                // But for "Ironclad" core, let's enforce keys for /v1/ endpoints strictly first
-                // OR check for cookie bypass (like we did for maintenance mode).
-                // Let's stick to Header for external APIs. if testing from browser, we should attach header.
+                // INTERNAL BYPASS: Check for Supabase Session
+                const { createServerClient } = await import("@supabase/ssr");
+                const { cookies } = await import("next/headers");
+                const cookieStore = await cookies();
+
+                const supabase = createServerClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                    {
+                        cookies: {
+                            getAll: () => cookieStore.getAll(),
+                            setAll: () => { }, // No-op for read-only check
+                        },
+                    }
+                );
+
+                const { data: { user }, error } = await supabase.auth.getUser();
+
+                if (user && !error) {
+                    // Valid Session Found - Allow Bypass
+                    return await handler(req, { user_id: user.id, key_id: "internal_session" });
+                }
+
                 return NextResponse.json(
                     { error: "Unauthorized", code: "missing_api_key", message: "Provide 'x-api-key' header." },
                     { status: 401 }
