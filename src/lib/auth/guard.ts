@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+
 
 export class AuthError extends Error {
     constructor(message: string) {
@@ -28,8 +28,7 @@ export async function verifyApiKey(key: string) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
-    // 3. Check DB
-    const supabase = createClient();
+
 
     // We need to use `supabase.from('api_keys')` but usually RLS blocks this for anon users if they aren't owner.
     // BUT this is a public API call (no session).

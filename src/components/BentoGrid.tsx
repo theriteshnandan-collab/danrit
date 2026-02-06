@@ -1,47 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Terminal, Camera, FileText, QrCode, Zap } from "lucide-react";
+import { Camera, QrCode, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ScrapeConsole } from "@/components/demos/ScrapeConsole";
 import { PdfStudio } from "@/components/demos/PdfStudio";
 
-const features = [
-    {
-        title: "Universal Scraper",
-        description: "Extract clean Markdown from any URL. Bypass anti-bot detection with ease.",
-        icon: Terminal,
-        color: "text-blue-500",
-        link: "/dashboard/laboratory?tab=scrape",
-        stats: "240ms Latency"
-    },
-    {
-        title: "PDF Engine",
-        description: "Convert HTML/URL to high-fidelity PDF documents. Print CSS supported.",
-        icon: FileText,
-        color: "text-red-500",
-        link: "/dashboard/laboratory?tab=pdf",
-        stats: "Vector Quality"
-    },
-    {
-        title: "Screenshot API",
-        description: "Capture full-page or specific element screenshots. Retina resolution.",
-        icon: Camera,
-        color: "text-orange-500",
-        link: "/dashboard/laboratory?tab=shot",
-        stats: "4K Ready"
-    },
-    {
-        title: "QR Generator",
-        description: "Dynamic QR codes with logo embedding and custom error correction.",
-        icon: QrCode,
-        color: "text-green-500",
-        link: "/dashboard/laboratory?tab=qr",
-        stats: "SVG Export"
-    },
-];
+
 
 export function BentoGrid() {
     const router = useRouter();

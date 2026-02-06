@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import QRCode from "qrcode";
 import { UsageService } from "@/lib/services/usage";

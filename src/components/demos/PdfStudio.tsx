@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Play, Download, Loader2 } from "lucide-react";
+import { FileText, Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 
 export function PdfStudio() {
     const [html, setHtml] = useState("<h1>Invoice #001</h1><p>Billed to: Acme Corp</p><p>Total: $5,000.00</p>");

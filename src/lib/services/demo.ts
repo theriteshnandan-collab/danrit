@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+
 
 export class DemoService {
     private static DEMO_USER_ID = "DEMO_GUEST";

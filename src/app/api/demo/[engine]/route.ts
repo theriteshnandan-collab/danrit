@@ -22,6 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: { engine: str
     }
 
     const startTime = performance.now();
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     let result: any = null;
     let credits = 1;
 
