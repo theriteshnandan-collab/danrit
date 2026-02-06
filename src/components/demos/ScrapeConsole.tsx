@@ -99,9 +99,9 @@ export function ScrapeConsole() {
             </div>
 
             {/* FOOTER STATS */}
-            <div className="px-3 py-1 bg-zinc-950 border-t border-zinc-900 flex justify-between text-[9px] text-zinc-600 font-mono uppercase">
-                <span>Latency: {loading ? "..." : "24ms"}</span>
-                <span>Proxy: ROTATING</span>
+            <div className="px-4 py-2 bg-black/80 border-t border-white/5 flex justify-between text-[9px] text-zinc-500 font-mono uppercase tracking-wider relative z-10">
+                <span>Latency: {loading ? "CALCULATING..." : "24ms"}</span>
+                <span className="text-blue-500/80">Proxy: SECURE</span>
             </div>
         </div>
     );

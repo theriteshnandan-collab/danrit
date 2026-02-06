@@ -2,129 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* OBSIDIAN PROTOCOL - Industrial Luxury */
-  --background: #050505;
-  /* Void Black */
-  --foreground: #E5E5E5;
-  /* Platinum */
-
-  --card: #0A0A0A;
-  --card-foreground: #FFFFFF;
-
-  --popover: #0A0A0A;
-  --popover-foreground: #FFFFFF;
-
-  --primary: #2563EB;
-  /* Signal Blue - Klein International */
-  --primary-foreground: #FFFFFF;
-
-  --secondary: #1A1A1A;
-  /* Tungsten */
-  --secondary-foreground: #A1A1AA;
-
-  --muted: #171717;
-  --muted-foreground: #737373;
-
-  --accent: #2563EB;
-  --accent-foreground: #FFFFFF;
-
-  --destructive: #7F1D1D;
-  --destructive-foreground: #FFFFFF;
-
-  --border: #262626;
-  /* Precision 1px */
-  --input: #171717;
-  --ring: #2563EB;
-
-  --radius: 0px;
-  /* Industrial Sharpness */
-
-  /* SPECIAL MATERIALS */
-  --glass: rgba(5, 5, 5, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-
-  --font-inter: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
-}
-
 @layer base {
+  :root {
+    --background: #000000;
+    /* Pure Void */
+    --foreground: #ffffff;
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-surface: rgba(255, 255, 255, 0.03);
+    --neon-blue: #2563eb;
+    --neon-red: #ef4444;
+    --neon-orange: #f97316;
+    --neon-green: #22c55e;
+  }
+
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] antialiased font-sans selection:bg-[var(--primary)] selection:text-white;
+    @apply bg-black text-white antialiased selection:bg-blue-600/30 selection:text-blue-200;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 }
 
-@layer components {
+@layer utilities {
 
-  /* Obsidian Glass - High Specular, Low Blur */
-  .glass-obsidian {
-    @apply bg-[var(--glass)] backdrop-blur-md border border-[var(--glass-border)];
+  /* TOPOGRAPHIC AMBIENCE */
+  .bg-void-animation {
+    background-color: #000000;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(239, 68, 68, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(34, 197, 94, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
+    animation: breathe 15s ease-in-out infinite alternate;
   }
 
-  /* Industrial Border */
-  .border-precision {
-    @apply border border-white/5;
+  @keyframes breathe {
+    0% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
   }
 
-  /* Typography - Swiss Style */
-  .text-display {
-    @apply font-bold tracking-tighter text-white;
+  /* GRID OVERLAY */
+  .tech-grid {
+    background-size: 50px 50px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
   }
 
-  .text-label {
-    @apply font-mono text-xs uppercase tracking-widest text-white/40;
+  /* GLASSMORPHISM - OBSIDIAN GRADE */
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_0_0_1px_rgba(0, 0, 0, 0.5)];
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .glass-panel:hover {
+    @apply border-white/20 bg-white/5;
+    box-shadow: 0 0 30px -10px rgba(37, 99, 235, 0.15);
+  }
+
+  /* TYPOGRAPHY */
+  .font-heading {
+    @apply font-bold tracking-[-0.04em] uppercase;
+  }
+
+  .font-mono-tight {
+    @apply font-mono tracking-tighter text-[10px] uppercase text-zinc-500;
+  }
+
+  /* NEON ACCENTS */
+  .neon-text-blue {
+    text-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
   }
 }
 
-/* FIBER OPTIC BACKGROUND */
-.fiber-optic {
-  background: radial-gradient(circle at 50% 50%, #1a1a40 0%, #000000 100%);
-  background-size: 200% 200%;
-  animation: fiberPan 15s ease infinite alternate;
-}
-
-@keyframes fiberPan {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* 3D GLOBE OVERRIDES */
-.globe-container canvas {
-  opacity: 0;
-  animation: fadeIn 2s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-/* SCROLLBAR - Minimal */
+/* CUSTOM SCROLLBAR */
 ::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  @apply bg-black;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  @apply bg-zinc-800 rounded-full hover:bg-zinc-600 transition-colors;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+/* SCANLINE */
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(37, 99, 235, 0.3);
+  opacity: 0.2;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+  animation: scan 6s linear infinite;
+  z-index: 50;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  0% {
+    top: -10%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.5;
+  }
+
+  90% {
+    opacity: 0.5;
+  }
+
+  100% {
+    top: 110%;
+    opacity: 0;
+  }
 }

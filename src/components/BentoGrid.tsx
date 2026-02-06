@@ -28,7 +28,7 @@ export function BentoGrid() {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 1, ease: "circOut" }}
-                            className="text-7xl md:text-9xl font-black tracking-tighter text-white uppercase opacity-100"
+                            className="text-7xl md:text-9xl font-heading text-white tracking-[-0.08em] uppercase opacity-100"
                         >
                             Danrit<span className="text-blue-600">.</span>
                         </motion.h1>
@@ -135,20 +135,31 @@ export function BentoGrid() {
                 </Card>
             </motion.div>
 
-            {/* STATS / INFO STRIP */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="col-span-1 md:col-span-2 lg:col-span-4 mt-8 pt-8 border-t border-zinc-900 flex justify-between items-center text-zinc-600 font-mono text-xs"
+                transition={{ delay: 0.8 }}
+                className="col-span-1 md:col-span-2 lg:col-span-4 mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-zinc-600 font-mono text-[10px] gap-4"
             >
-                <div className="flex gap-8">
-                    <span className="flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> SYSTEM OPERATIONAL</span>
-                    <span>V1.1.0-STABLE</span>
-                    <span>LATENCY: 42ms</span>
+                <div className="flex gap-8 items-center">
+                    <span className="flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        SYSTEM OPERATIONAL
+                    </span>
+                    <span className="text-zinc-700">|</span>
+                    <span>V1.2.0-OBSIDIAN</span>
+                    <span className="text-zinc-700">|</span>
+                    <span>LATENCY: 12ms</span>
                 </div>
-                <div className="flex gap-8 uppercase tracking-widest">
-                    <span>By Danrit Corp</span>
+                <div className="flex gap-4 uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity">
+                    <span>Encrypted</span>
+                    <span>•</span>
+                    <span>No Logs</span>
+                    <span>•</span>
+                    <span>God Mode</span>
                 </div>
             </motion.div>
         </div>
