@@ -73,6 +73,7 @@ export const POST = withAuth(async (req, { user_id }) => {
             success: true,
             data: {
                 base64: base64Pdf,
+                mime_type: "application/pdf",
                 filename: `danrit-${Date.now()}.pdf`
             },
             meta: {
