@@ -5,6 +5,8 @@ import { Terminal, Camera, FileText, QrCode, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { ScrapeConsole } from "@/components/demos/ScrapeConsole";
+import { PdfStudio } from "@/components/demos/PdfStudio";
 
 const features = [
     {
@@ -74,43 +76,97 @@ export function BentoGrid() {
             </motion.div>
 
             {/* FEATURE CARDS */}
-            {features.map((feature, i) => (
-                <motion.div
-                    key={feature.title}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1, duration: 0.4 }}
-                    className="col-span-1"
-                >
-                    <Card className="h-full bg-zinc-900/50 border-zinc-800/50 hover:border-blue-500/50 transition-colors group rounded-none">
-                        <CardHeader>
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`p-3 bg-zinc-950/50 border border-zinc-800 ${feature.color} group-hover:scale-110 transition-transform`}>
-                                    <feature.icon className="w-6 h-6" />
-                                </div>
-                                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest border border-zinc-800 px-2 py-0.5">
-                                    {feature.stats}
-                                </span>
+            {/* 1. UNIVERSAL SCRAPER (INTERACTIVE) */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="col-span-1 md:col-span-1 h-[340px]" // Fixed height for console
+            >
+                <ScrapeConsole />
+            </motion.div>
+
+            {/* 2. PDF ENGINE (INTERACTIVE) */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="col-span-1 md:col-span-1 h-[340px]"
+            >
+                <PdfStudio />
+            </motion.div>
+
+            {/* 3. SCREENSHOT API (STATIC FOR NOW, UPGRADE LATER) */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+                className="col-span-1"
+            >
+                <Card className="h-full bg-zinc-900/50 border-zinc-800/50 hover:border-orange-500/50 transition-colors group rounded-md overflow-hidden">
+                    <CardHeader>
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-zinc-950/50 border border-zinc-800 text-orange-500 group-hover:scale-110 transition-transform">
+                                <Camera className="w-6 h-6" />
                             </div>
-                            <CardTitle className="text-xl text-zinc-100 uppercase tracking-widest font-bold">
-                                {feature.title}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6 font-mono">
-                                {feature.description}
-                            </CardDescription>
-                            <Button
-                                variant="secondary"
-                                className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 rounded-none border border-zinc-800 group-hover:border-blue-500/30 transition-colors"
-                                onClick={() => router.push(feature.link)}
-                            >
-                                DEPLOY ENGINE <Zap className="ml-2 w-3 h-3 text-yellow-500" />
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            ))}
+                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest border border-zinc-800 px-2 py-0.5">
+                                4K Retina
+                            </span>
+                        </div>
+                        <CardTitle className="text-xl text-zinc-100 uppercase tracking-widest font-bold">
+                            Screenshot API
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6 font-mono">
+                            Capture full-page or specific element screenshots. Heavy pages loaded in milliseconds.
+                        </CardDescription>
+                        <Button
+                            variant="secondary"
+                            className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 rounded-none border border-zinc-800 group-hover:border-orange-500/30 transition-colors"
+                            onClick={() => router.push("/dashboard/laboratory?tab=shot")}
+                        >
+                            DEPLOY ENGINE <Zap className="ml-2 w-3 h-3 text-yellow-500" />
+                        </Button>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* 4. QR GENERATOR */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+                className="col-span-1"
+            >
+                <Card className="h-full bg-zinc-900/50 border-zinc-800/50 hover:border-green-500/50 transition-colors group rounded-md overflow-hidden">
+                    <CardHeader>
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-zinc-950/50 border border-zinc-800 text-green-500 group-hover:scale-110 transition-transform">
+                                <QrCode className="w-6 h-6" />
+                            </div>
+                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest border border-zinc-800 px-2 py-0.5">
+                                SVG Export
+                            </span>
+                        </div>
+                        <CardTitle className="text-xl text-zinc-100 uppercase tracking-widest font-bold">
+                            QR Generator
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CardDescription className="text-zinc-400 text-sm leading-relaxed mb-6 font-mono">
+                            Dynamic QR codes with logo embedding and custom error correction.
+                        </CardDescription>
+                        <Button
+                            variant="secondary"
+                            className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 rounded-none border border-zinc-800 group-hover:border-green-500/30 transition-colors"
+                            onClick={() => router.push("/dashboard/laboratory?tab=qr")}
+                        >
+                            DEPLOY ENGINE <Zap className="ml-2 w-3 h-3 text-yellow-500" />
+                        </Button>
+                    </CardContent>
+                </Card>
+            </motion.div>
 
             {/* STATS / INFO STRIP */}
             <motion.div
