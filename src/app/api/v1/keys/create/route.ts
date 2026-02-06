@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { randomBytes } from "crypto";
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
     try {
         const supabase = createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         // Let's use standard Web Crypto API for compatibility.
         // Actually, simpler:
         const encoder = new TextEncoder();
-        const data = encoder.encode(randomPart); // We only hash the random part? No, hash the WHOLE token?
+        const _data = encoder.encode(randomPart); // We only hash the random part? No, hash the WHOLE token?
         // Standard practice: Hash the whole token.
         const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(randomPart));
         const hashArray = Array.from(new Uint8Array(hashBuffer));

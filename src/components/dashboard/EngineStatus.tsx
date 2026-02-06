@@ -1,4 +1,4 @@
-import { Play, Pause, AlertCircle } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 
 export function EngineStatus() {
