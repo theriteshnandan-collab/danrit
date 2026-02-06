@@ -1,119 +1,173 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { UsageService } from "@/lib/services/usage";
-import { BrowserService } from "@/lib/services/browser";
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { UsageService } from '@/lib/services/usage';
+import { BrowserService } from '@/lib/services/browser';
+import { assertUrlIsSafe, runWithAbort } from '@/lib/services/network-policy';
 
 export const maxDuration = 60; // Allow 60s for PDF generation
+
+const REQUEST_TIMEOUT_MS = 45_000;
+const NAV_TIMEOUT_MS = 30_000;
 
 export async function POST(req: NextRequest) {
     const startTime = performance.now();
     let status = 200;
-    let userId = "";
+    let userId = '';
 
     try {
-        // 1. Auth Check (Ironclad)
-        userId = req.headers.get("x-user-id") || "";
+        userId = req.headers.get('x-user-id') || '';
         if (!userId) {
             status = 401;
-            return NextResponse.json({ error: "Unauthorized" }, { status });
+            return NextResponse.json({ error: 'Unauthorized' }, { status });
         }
 
-        // 2. Parse Body (V2 Schema)
         const json = await req.json();
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const { url, format, print_background, wait_for, css, cookies } = json as any;
-        // We cast to any because we are extending the schema dynamically here (or verify schema is updated)
 
-        // 3. Use Unified Browser Service
-        const browser = await BrowserService.getBrowser();
-        const page = await browser.newPage();
+        const safeUrl = await assertUrlIsSafe(url);
 
-        // 3a. Inject Cookies (For Auth)
-        if (cookies && Array.isArray(cookies)) {
-            await page.setCookie(...cookies);
-        }
+        const pdfBuffer = await BrowserService.withIsolatedPage(
+            { endpoint: '/api/v1/pdf', timeoutMs: REQUEST_TIMEOUT_MS, requestSignal: req.signal },
+            async ({ page, signal }) => {
+                if (cookies && Array.isArray(cookies)) {
+                    await page.setCookie(...cookies);
+                }
 
-        // Optimize for Print
-        await page.setViewport({ width: 1200, height: 800 });
+                await page.setViewport({ width: 1200, height: 800 });
 
-        // 3b. Smart Navigation
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+                const navStart = performance.now();
+                try {
+                    await runWithAbort(
+                        async () => page.goto(safeUrl, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT_MS }),
+                        signal,
+                    );
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/pdf',
+                        engine: 'chromium',
+                        nav_time_ms: Math.round(performance.now() - navStart),
+                        success: true,
+                    });
+                } catch (error) {
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/pdf',
+                        engine: 'chromium',
+                        nav_time_ms: Math.round(performance.now() - navStart),
+                        success: false,
+                        failure_mode: error instanceof Error ? error.name : 'navigation_error',
+                    });
+                    throw error;
+                }
 
-        // 3c. Smart Wait (Selector)
-        if (wait_for) {
-            try {
-                await page.waitForSelector(wait_for, { timeout: 5000 });
-            } catch {
-                console.warn(`Timeout waiting for selector: ${wait_for}`);
-            }
-        }
+                if (wait_for) {
+                    try {
+                        await runWithAbort(async () => page.waitForSelector(wait_for, { timeout: 5_000 }), signal);
+                    } catch {
+                        console.warn(`Timeout waiting for selector: ${wait_for}`);
+                    }
+                }
 
-        // 3d. Inject Custom CSS (Clean up ads/layout)
-        if (css) {
-            await page.addStyleTag({ content: css });
-        }
+                if (css) {
+                    await runWithAbort(async () => page.addStyleTag({ content: css }), signal);
+                }
 
-        // Generate PDF
-        const pdfBuffer = await page.pdf({
-            format: format as "a4" | "letter" | "legal" | "tabloid" | "ledger" | "a0" | "a1" | "a2" | "a3" | "a5" | "a6",
-            printBackground: print_background,
-            margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" }
-        });
+                const renderStart = performance.now();
+                try {
+                    const buffer = await runWithAbort(
+                        async () => page.pdf({
+                            format: format as
+                                | 'a4'
+                                | 'letter'
+                                | 'legal'
+                                | 'tabloid'
+                                | 'ledger'
+                                | 'a0'
+                                | 'a1'
+                                | 'a2'
+                                | 'a3'
+                                | 'a5'
+                                | 'a6',
+                            printBackground: print_background,
+                            margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' },
+                        }),
+                        signal,
+                    );
 
-        await browser.close();
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/pdf',
+                        engine: 'chromium',
+                        render_time_ms: Math.round(performance.now() - renderStart),
+                        success: true,
+                    });
 
-        // 4. Log Usage (5 Credits for PDF)
+                    return buffer;
+                } catch (error) {
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/pdf',
+                        engine: 'chromium',
+                        render_time_ms: Math.round(performance.now() - renderStart),
+                        success: false,
+                        failure_mode: error instanceof Error ? error.name : 'render_error',
+                    });
+                    throw error;
+                }
+            },
+        );
+
         const duration = Math.round(performance.now() - startTime);
         UsageService.logRequest({
             user_id: userId,
-            endpoint: "/api/v1/pdf",
-            method: "POST",
+            endpoint: '/api/v1/pdf',
+            method: 'POST',
             status_code: 200,
             duration_ms: duration,
         });
 
-        // 5. Return PDF (Base64 for Unified API)
-        // Returning Base64 is cleaner for a universal JSON API than binary streams
         const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
 
         return NextResponse.json({
             success: true,
             data: {
                 base64: base64Pdf,
-                filename: `danrit-${Date.now()}.pdf`
+                filename: `danrit-${Date.now()}.pdf`,
             },
             meta: {
                 duration_ms: duration,
-                credits_used: 5 // Premium charge
-            }
+                credits_used: 5,
+            },
         });
-
     } catch (error) {
         status = 500;
-        let errorMessage = "Internal Server Error";
+        let errorMessage = 'Internal Server Error';
         let errorDetails: unknown = String(error);
 
         if (error instanceof z.ZodError) {
             status = 400;
-            errorMessage = "Invalid Input";
+            errorMessage = 'Invalid Input';
             errorDetails = error.issues;
         }
 
-        // Log Failure
         const duration = Math.round(performance.now() - startTime);
         if (userId) {
             UsageService.logRequest({
                 user_id: userId,
-                endpoint: "/api/v1/pdf",
-                method: "POST",
+                endpoint: '/api/v1/pdf',
+                method: 'POST',
                 status_code: status,
                 duration_ms: duration,
             });
         }
 
-        return NextResponse.json({
-            error: errorMessage,
-            details: errorDetails
-        }, { status });
+        return NextResponse.json(
+            {
+                error: errorMessage,
+                details: errorDetails,
+            },
+            { status },
+        );
     }
 }
