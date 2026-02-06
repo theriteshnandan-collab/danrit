@@ -88,6 +88,26 @@ export const DnsRequestSchema = z.object({
     type: z.enum(["A", "MX", "TXT", "NS", "CNAME"]).optional().default("A"),
 });
 
+export const OcrRequestSchema = z.object({
+    url: z.string().url("Valid Image URL is required"),
+    lang: z.string().default("eng"), // 'eng', 'spa', 'fra', etc.
+});
+
+export const VideoRequestSchema = z.object({
+    url: z.string().url("Valid Video URL is required"),
+    action: z.enum(["compress", "thumbnail", "convert"]),
+    options: z.object({
+        width: z.number().optional(), // For resizing/thumbnail
+        height: z.number().optional(),
+        format: z.string().optional(), // 'mp4', 'mov' etc.
+        quality: z.string().optional(), // 'low', 'medium', 'high'
+        time: z.string().optional(), // '00:00:05' for thumbnail
+    }).optional(),
+});
+
+export type OcrRequest = z.infer<typeof OcrRequestSchema>;
+export type VideoRequest = z.infer<typeof VideoRequestSchema>;
+
 export interface SharedApiResult {
     title?: string;
     content?: string;
