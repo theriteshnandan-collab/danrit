@@ -27,11 +27,14 @@ export default function Sidebar() {
         <aside className={`h-screen bg-[#050505] border-r border-[#1F1F22] flex flex-col transition-all duration-300 ${collapsed ? "w-16" : "w-64"}`}>
 
             {/* Brand */}
-            <div className="h-16 flex items-center px-6 border-b border-[#1F1F22]">
-                <div className={`w-3 h-3 rounded-full bg-[#FF4F00] animate-pulse ${collapsed ? "mx-auto" : ""}`} />
-                {!collapsed && (
-                    <span className="ml-3 font-bold tracking-tight text-white text-sm">DANRIT</span>
-                )}
+            {/* Brand */}
+            <div className="h-16 border-b border-[#1F1F22]">
+                <Link href="/" className="flex items-center h-full px-6 hover:opacity-80 transition-opacity">
+                    <div className={`w-3 h-3 rounded-full bg-[#FF4F00] animate-pulse ${collapsed ? "mx-auto" : ""}`} />
+                    {!collapsed && (
+                        <span className="ml-3 font-bold tracking-tight text-white text-sm">DANRIT</span>
+                    )}
+                </Link>
             </div>
 
             {/* Navigation */}
