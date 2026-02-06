@@ -1,4 +1,3 @@
-import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
@@ -6,13 +5,6 @@ import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 // 1. Configure Plugins (The "Ghost" Mode)
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
-
-interface ChromiumConfig {
-    args: string[];
-    defaultViewport: { width: number; height: number };
-    executablePath: () => Promise<string>;
-    headless: boolean | "shell";
-}
 
 export class BrowserService {
     static async getBrowser() {
