@@ -5,6 +5,11 @@ import { UsageService } from "@/lib/services/usage";
 import { withAuth } from "@/lib/api/handler";
 
 export const maxDuration = 60; // Allow 60s for scraping
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+    return NextResponse.json({ status: "active", engine: "scrape-v1" });
+}
 
 const bodySchema = z.object({
     url: z.string().url(),
