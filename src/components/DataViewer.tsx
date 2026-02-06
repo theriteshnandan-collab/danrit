@@ -69,10 +69,14 @@ export default function DataViewer({ data }: DataViewerProps) {
                             </div>
                         )}
 
-                        {data.image && (
-                            <div className="mb-8 rounded-lg overflow-hidden border border-white/10 shadow-2xl">
+                        {(data.image || data.base64) && (
+                            <div className="mb-8 rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-[#000] flex justify-center py-8">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={data.image} alt="API Result" className="w-full h-auto" />
+                                <img
+                                    src={data.image || `data:${data.mime_type || 'image/png'};base64,${data.base64}`}
+                                    alt="API Result"
+                                    className="max-w-full h-auto max-h-[500px] object-contain"
+                                />
                             </div>
                         )}
 
