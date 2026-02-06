@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { UsageService } from "@/lib/services/usage";
-import { PdfRequestSchema } from "@/lib/types/schema";
 import { BrowserService } from "@/lib/services/browser";
 
 export const maxDuration = 60; // Allow 60s for PDF generation

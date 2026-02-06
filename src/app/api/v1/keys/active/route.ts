@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         const supabase = createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
             message: "Cannot retrieve full key (hashed). Use Session Bypass in Lab."
         }, { status: 501 });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Internal Error" }, { status: 500 });
     }
 }
