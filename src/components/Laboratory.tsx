@@ -68,19 +68,29 @@ export default function Laboratory() {
                 body: JSON.stringify(body)
             });
 
-            const data = await res.json();
+            // Handle non-JSON responses (e.g. Vercel 500/504 HTML pages)
+            const contentType = res.headers.get("content-type");
+            let data;
 
-            if (data.success || data.records) { // DNS returns records, others return success
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                console.error("API Returned Non-JSON:", text);
+                throw new Error(`API Error (${res.status}): ${res.statusText || "Unknown Error"}`);
+            }
+
+            if (res.ok && (data.success || data.records)) { // DNS returns records, others return success
                 setResult(data.data || data); // Store the payload
                 setStatus("SUCCESS");
             } else {
-                setResult(data);
+                setResult(data || { error: "Unknown API Error" });
                 setStatus("ERROR");
             }
 
         } catch (err) {
             console.error("Lab Execution Error:", err);
-            setResult({ error: err instanceof Error ? err.message : "Network Failure" });
+            setResult({ error: err instanceof Error ? err.message : "Unknown Execution Failure" });
             setStatus("ERROR");
         } finally {
             setLoading(false);
