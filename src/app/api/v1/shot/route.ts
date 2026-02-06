@@ -1,99 +1,146 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { UsageService } from "@/lib/services/usage";
-import { ShotRequestSchema } from "@/lib/types/schema";
-import { BrowserService } from "@/lib/services/browser";
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { UsageService } from '@/lib/services/usage';
+import { ShotRequestSchema } from '@/lib/types/schema';
+import { BrowserService } from '@/lib/services/browser';
+import { assertUrlIsSafe, runWithAbort } from '@/lib/services/network-policy';
 
 export const maxDuration = 60;
+
+const REQUEST_TIMEOUT_MS = 45_000;
+const NAV_TIMEOUT_MS = 30_000;
 
 export async function POST(req: NextRequest) {
     const startTime = performance.now();
     let status = 200;
-    let userId = "";
+    let userId = '';
 
     try {
-        // 1. Auth Check (Ironclad)
-        userId = req.headers.get("x-user-id") || "";
+        userId = req.headers.get('x-user-id') || '';
         if (!userId) {
             status = 401;
-            return NextResponse.json({ error: "Unauthorized" }, { status });
+            return NextResponse.json({ error: 'Unauthorized' }, { status });
         }
 
-        // 2. Parse Body
         const json = await req.json();
         const { url, width, height, full_page } = ShotRequestSchema.parse(json);
+        const safeUrl = await assertUrlIsSafe(url);
 
-        // 3. Use Unified Browser Service
-        const browser = await BrowserService.getBrowser();
-        const page = await browser.newPage();
+        const buffer = await BrowserService.withIsolatedPage(
+            { endpoint: '/api/v1/shot', timeoutMs: REQUEST_TIMEOUT_MS, requestSignal: req.signal },
+            async ({ page, signal }) => {
+                await page.setViewport({ width, height, deviceScaleFactor: 2 });
 
-        // 3a. Retina Mode (High DPI)
-        await page.setViewport({ width, height, deviceScaleFactor: 2 });
+                const navStart = performance.now();
+                try {
+                    await runWithAbort(
+                        async () => page.goto(safeUrl, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT_MS }),
+                        signal,
+                    );
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/shot',
+                        engine: 'chromium',
+                        nav_time_ms: Math.round(performance.now() - navStart),
+                        success: true,
+                    });
+                } catch (error) {
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/shot',
+                        engine: 'chromium',
+                        nav_time_ms: Math.round(performance.now() - navStart),
+                        success: false,
+                        failure_mode: error instanceof Error ? error.name : 'navigation_error',
+                    });
+                    throw error;
+                }
 
-        // 3b. Smart Navigation
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+                const renderStart = performance.now();
+                try {
+                    const imageBuffer = await runWithAbort(
+                        async () => page.screenshot({
+                            fullPage: full_page,
+                            type: 'png',
+                            encoding: 'binary',
+                        }),
+                        signal,
+                    );
 
-        // Screenshot
-        const buffer = await page.screenshot({
-            fullPage: full_page,
-            type: "png",
-            encoding: "binary"
-        });
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/shot',
+                        engine: 'chromium',
+                        render_time_ms: Math.round(performance.now() - renderStart),
+                        success: true,
+                    });
 
-        await browser.close();
+                    return imageBuffer;
+                } catch (error) {
+                    BrowserService.emitMetric({
+                        event: 'render_job',
+                        endpoint: '/api/v1/shot',
+                        engine: 'chromium',
+                        render_time_ms: Math.round(performance.now() - renderStart),
+                        success: false,
+                        failure_mode: error instanceof Error ? error.name : 'render_error',
+                    });
+                    throw error;
+                }
+            },
+        );
 
-        // 4. Log Usage (3 Credits for Shot)
         const duration = Math.round(performance.now() - startTime);
         UsageService.logRequest({
             user_id: userId,
-            endpoint: "/api/v1/shot",
-            method: "POST",
+            endpoint: '/api/v1/shot',
+            method: 'POST',
             status_code: 200,
             duration_ms: duration,
         });
 
-        // 5. Return Image (Base64)
         const base64Image = Buffer.from(buffer).toString('base64');
 
         return NextResponse.json({
             success: true,
             data: {
                 base64: base64Image,
-                mime_type: "image/png",
-                filename: `shot-${Date.now()}.png`
+                mime_type: 'image/png',
+                filename: `shot-${Date.now()}.png`,
             },
             meta: {
                 duration_ms: duration,
-                credits_used: 3
-            }
+                credits_used: 3,
+            },
         });
-
     } catch (error) {
         status = 500;
-        let errorMessage = "Internal Server Error";
+        let errorMessage = 'Internal Server Error';
         let errorDetails: unknown = String(error);
 
         if (error instanceof z.ZodError) {
             status = 400;
-            errorMessage = "Invalid Input";
+            errorMessage = 'Invalid Input';
             errorDetails = error.issues;
         }
 
-        // Log Failure
         const duration = Math.round(performance.now() - startTime);
         if (userId) {
             UsageService.logRequest({
                 user_id: userId,
-                endpoint: "/api/v1/shot",
-                method: "POST",
+                endpoint: '/api/v1/shot',
+                method: 'POST',
                 status_code: status,
                 duration_ms: duration,
             });
         }
 
-        return NextResponse.json({
-            error: errorMessage,
-            details: errorDetails
-        }, { status });
+        return NextResponse.json(
+            {
+                error: errorMessage,
+                details: errorDetails,
+            },
+            { status },
+        );
     }
 }
