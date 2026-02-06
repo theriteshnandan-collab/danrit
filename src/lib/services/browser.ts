@@ -26,11 +26,10 @@ export class BrowserService {
                 : chromiumConfig.headless;
 
             return await puppeteer.launch({
-                args: [...chromiumConfig.args, '--hide-scrollbars', '--disable-web-security'],
+                args: [...chromiumConfig.args, '--hide-scrollbars', '--disable-web-security', '--ignore-certificate-errors'],
                 defaultViewport: chromiumConfig.defaultViewport,
                 executablePath: executablePath,
                 headless: headlessMode as boolean | "shell",
-                ignoreHTTPSErrors: true,
             });
         } else {
             // Local fallback
