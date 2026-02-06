@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Camera, FileText, Globe2, ScanSearch, Terminal, Zap } from "lucide-react";
+import { Camera, FileText, Globe2, ScanSearch, ShieldCheck, Terminal, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -33,13 +33,21 @@ const engines = [
     copy: "Feed pixel and document intelligence into autonomous agents in one signed request.",
     icon: Globe2,
   },
+  {
+    title: "Vault",
+    tag: "Zero-Trust Keys",
+    copy: "API keys are masked by default and instantly rotatable with signed audit trails.",
+    icon: ShieldCheck,
+  },
 ];
 
 const trust = ["AERODYNE SYSTEMS", "BLACKLATTICE", "NOVA FREIGHT", "ORBITAL NEXUS", "KINETIC BANK"];
 
 export function MonolithLanding() {
   const [url, setUrl] = useState("https://danrit.tech");
-  const [html, setHtml] = useState("<h1>Mission Report</h1><p>Danrit powers unified execution across scraping, PDF, screenshot and vision.</p>");
+  const [html, setHtml] = useState(
+    "<h1>Mission Report</h1><p>Danrit powers unified execution across scraping, PDF, screenshot and vision.</p>",
+  );
 
   const pseudoScrapeResult = useMemo(() => {
     const domain = url.replace(/^https?:\/\//, "").split("/")[0] || "target.local";
@@ -52,6 +60,21 @@ export function MonolithLanding() {
 
   return (
     <main className="monolith-shell">
+      <header className="top-nav container-wide">
+        <Link href="/" className="brand-mark">
+          <span className="brand-dot" />
+          <span>DANRIT</span>
+        </Link>
+        <nav className="nav-links" aria-label="Primary">
+          <Link href="#engines">Engines</Link>
+          <Link href="#bento">Live Demo</Link>
+          <Link href="/dashboard">Dashboard</Link>
+        </nav>
+        <Link href="/login" className="btn-ghost">
+          Sign In
+        </Link>
+      </header>
+
       <div className="monolith-backdrop" aria-hidden>
         <div className="noise-overlay" />
         <div className="scanlines" />
@@ -83,6 +106,12 @@ export function MonolithLanding() {
               Live Engine Lab <Zap size={16} />
             </Link>
           </div>
+
+          <div className="hero-metrics">
+            <span><em>42ms</em> median latency</span>
+            <span><em>99.98%</em> uptime</span>
+            <span><em>5 engines</em> unified keyspace</span>
+          </div>
         </motion.div>
       </section>
 
@@ -100,8 +129,13 @@ export function MonolithLanding() {
         ))}
       </section>
 
-      <section className="container-wide bento-grid">
-        <motion.article className="glass-panel bento-card bento-lg" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+      <section id="bento" className="container-wide bento-grid">
+        <motion.article
+          className="glass-panel bento-card bento-lg"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
           <div className="bento-head">
             <p className="kicker">Interactive Demo · Scrape-Jet</p>
             <h3>Live Extraction Feed</h3>
@@ -119,7 +153,12 @@ export function MonolithLanding() {
           </div>
         </motion.article>
 
-        <motion.article className="glass-panel bento-card bento-lg" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.article
+          className="glass-panel bento-card bento-lg"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
           <div className="bento-head">
             <p className="kicker">Interactive Demo · PDF-Jet</p>
             <h3>Instant Document Preview</h3>
@@ -140,6 +179,7 @@ export function MonolithLanding() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: index * 0.04 }}
+            id={engine.title === "Scrape-Jet" ? "engines" : undefined}
           >
             <div className="engine-icon-wrap">
               <engine.icon size={20} />
