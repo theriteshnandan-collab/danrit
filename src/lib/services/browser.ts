@@ -17,7 +17,14 @@ export class BrowserService {
             chromium.setGraphicsMode = false;
 
             return await puppeteerCore.launch({
-                args: chromium.args,
+                args: [
+                    ...chromium.args,
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--disable-setuid-sandbox',
+                    '--no-sandbox',
+                    '--no-zygote',
+                ],
                 defaultViewport: chromium.defaultViewport,
                 executablePath: await chromium.executablePath(),
                 headless: chromium.headless,
