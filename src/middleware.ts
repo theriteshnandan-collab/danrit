@@ -3,6 +3,27 @@ import { createServerClient } from "@supabase/ssr";
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+    // 0. MAINTENANCE MODE CHECK (The Safety Lock)
+    if (process.env.MAINTENANCE_MODE === "true") {
+        const bypassCookie = request.cookies.get("x-danrit-maintenance-bypass");
+        const path = request.nextUrl.pathname;
+
+        // Allow Bypass if cookie is present
+        if (!bypassCookie) {
+            // Block all paths except:
+            // - /maintenance (The page itself)
+            // - /api/auth/bypass (The key slot)
+            // - /_next (Static assets)
+            // - /favicon.ico
+            if (!path.startsWith("/maintenance") &&
+                !path.startsWith("/api/auth/bypass") &&
+                !path.startsWith("/_next") &&
+                path !== "/favicon.ico") {
+                return NextResponse.redirect(new URL("/maintenance", request.url));
+            }
+        }
+    }
+
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
         console.error("❌ FATAL: SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables.");
         return NextResponse.json({ error: "Server Misconfiguration: Missing Service Role Key" }, { status: 500 });
