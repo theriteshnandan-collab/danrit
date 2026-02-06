@@ -1,104 +1,97 @@
-"use client";
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { StatsCards } from "@/components/dashboard/StatsCards";
+import { RequestLogTable } from "@/components/dashboard/RequestLogTable";
+import { ApiKeyManager } from "@/components/dashboard/ApiKeyManager";
+import { EngineStatus } from "@/components/dashboard/EngineStatus";
+import { UsageService } from "@/lib/services/usage";
 
-import CommandPalette from "@/components/CommandPalette";
-import { Activity, Database, Server, RefreshCw } from "lucide-react";
-import { useDashboardStats } from "@/lib/hooks/use-dashboard";
+// 30 Seconds revalidation for near real-time feels without overload
+export const revalidate = 30;
 
-export default function DashboardPage() {
-    const { stats, loading, error } = useDashboardStats();
+async function DashboardContent() {
+    const supabase = createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-    if (loading) {
-        return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white/20 font-mono text-xs">INITIALIZING COMMAND DECK...</div>;
+    if (error || !user) {
+        redirect("/login");
     }
 
+    // Parallel Data Fetching
+    const [logs, keys, usageStats] = await Promise.all([
+        UsageService.getUserLogs(user.id, 10), // Limit 10
+        supabase.from('api_keys').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        UsageService.getUserStats(user.id)
+    ]);
+
+    // Derived Stats
+    const stats = {
+        totalRequests: usageStats.total_requests,
+        creditsUsed: usageStats.total_credits_used,
+        successRate: usageStats.total_requests > 0
+            ? Math.round(((usageStats.total_requests - usageStats.failed_requests) / usageStats.total_requests) * 100)
+            : 100,
+        activeKeys: keys.data?.filter(k => k.status === 'active').length || 0
+    };
+
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-8 font-sans">
-            <CommandPalette />
+        <div className="space-y-8">
+            <DashboardHeader
+                title="Command Center"
+                subtitle="Manage your engines, keys, and usage."
+            />
 
-            <header className="flex items-center justify-between mb-12">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight mb-1">Command Center</h1>
-                    <p className="text-[#666] text-sm">Overview of your Universal API infrastructure.</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-[#444] font-mono border border-white/10 px-3 py-1.5 rounded bg-white/[0.02]">
-                    <span className={`w-2 h-2 rounded-full ${error ? "bg-red-500" : "bg-[#00E054] animate-pulse"}`} />
-                    {error ? "SYSTEM OFFILINE" : "SYSTEM OPERATIONAL"}
-                </div>
-            </header>
+            <StatsCards stats={stats} />
 
-            {/* Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-                {/* Metric 1: Usage (REAL) */}
-                <div className="p-6 rounded-xl border border-white/10 bg-[#09090b] relative overflow-hidden group hover:border-white/20 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[#666] text-xs font-medium uppercase tracking-wider">Total Requests</span>
-                        <Activity className="w-4 h-4 text-[#3B82F6]" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Activity Logs */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-medium text-white">Live Activity</h3>
+                        </div>
+                        <RequestLogTable logs={logs} />
                     </div>
-                    <div className="text-4xl font-bold tracking-tight mb-1 text-white">
-                        {stats?.total_requests.toLocaleString() || 0}
-                    </div>
-                    <div className="text-xs text-[#00E054] font-medium">Synced Live</div>
-                    <div className="absolute bottom-0 left-0 right-0 h-16 opacity-20 bg-gradient-to-t from-[#3B82F6] to-transparent pointer-events-none" />
+
+                    {/* API Keys */}
+                    <ApiKeyManager keys={keys.data || []} />
                 </div>
 
-                {/* Metric 2: Success Rate (REAL) */}
-                <div className="p-6 rounded-xl border border-white/10 bg-[#09090b] relative overflow-hidden group hover:border-white/20 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[#666] text-xs font-medium uppercase tracking-wider">Success Rate</span>
-                        <Server className="w-4 h-4 text-[#FF4F00]" />
+                <div className="space-y-8">
+                    {/* Engine Health */}
+                    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+                        <EngineStatus />
                     </div>
-                    <div className="text-4xl font-bold tracking-tight mb-1 text-white">
-                        {stats?.success_rate}%
-                    </div>
-                    <div className="text-xs text-[#666] font-medium">Reliability Score</div>
-                </div>
 
-                {/* Metric 3: Credits (MOCK for now, but wired) */}
-                <div className="p-6 rounded-xl border border-white/10 bg-[#09090b] relative overflow-hidden group hover:border-white/20 transition-colors">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[#666] text-xs font-medium uppercase tracking-wider">Remaining Credits</span>
-                        <Database className="w-4 h-4 text-[#F59E0B]" />
+                    {/* Quick Start / Docs */}
+                    <div className="p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 border border-indigo-500/20 rounded-xl">
+                        <h3 className="text-sm font-medium text-indigo-400 mb-2">Integration Guide</h3>
+                        <p className="text-xs text-zinc-400 mb-4">
+                            Learn how to connect Danrit engines to your application using our unified API.
+                        </p>
+                        <a
+                            href="https://github.com/theriteshnandan-collab/danrit"
+                            target="_blank"
+                            className="text-xs font-bold text-white hover:text-indigo-400 transition-colors"
+                        >
+                            Read Documentation &rarr;
+                        </a>
                     </div>
-                    <div className="text-4xl font-bold tracking-tight mb-1 text-white">
-                        999,999
-                    </div>
-                    <div className="text-xs text-[#666] font-medium">Unlimited Access</div>
                 </div>
             </div>
+        </div>
+    );
+}
 
-            {/* Recent Activity Log (REAL) */}
-            <div className="rounded-xl border border-white/10 bg-[#09090b] overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-                    <h3 className="text-sm font-semibold text-white">Live Activity Log</h3>
-                    <div className="text-[10px] uppercase font-bold text-[#666] flex items-center gap-2">
-                        <RefreshCw size={10} className="animate-spin" /> REALTIME
-                    </div>
-                </div>
-                <div className="divide-y divide-white/5 font-mono text-xs">
-                    {stats?.recent_logs.length === 0 && (
-                        <div className="px-6 py-8 text-center text-[#444]">
-                            No activity detected. Launch a scrape in the Laboratory.
-                        </div>
-                    )}
-                    {stats?.recent_logs.map((log: { id: string; created_at: string; status_code: number; endpoint: string; duration_ms: number }) => (
-                        <div key={log.id} className="px-6 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
-                            <div className="flex items-center gap-4">
-                                <span className="text-[#666]">
-                                    {new Date(log.created_at).toLocaleTimeString()}
-                                </span>
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${log.status_code >= 400
-                                    ? "bg-red-500/10 text-red-500"
-                                    : "bg-[#00E054]/10 text-[#00E054]"
-                                    }`}>
-                                    {log.status_code} {log.status_code === 200 ? "OK" : "ERR"}
-                                </span>
-                                <span className="text-white/80 truncate w-64">{log.endpoint}</span>
-                            </div>
-                            <span className="text-[#666]">{log.duration_ms}ms</span>
-                        </div>
-                    ))}
-                </div>
+export default function DashboardPage() {
+    return (
+        <div className="min-h-screen bg-black pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                <Suspense fallback={<div className="text-zinc-500">Loading Command Center...</div>}>
+                    <DashboardContent />
+                </Suspense>
             </div>
         </div>
     );
