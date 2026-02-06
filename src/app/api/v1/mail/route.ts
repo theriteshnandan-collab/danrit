@@ -4,23 +4,14 @@ import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { UsageService } from "@/lib/services/usage";
 import { MailRequestSchema } from "@/lib/types/schema";
+import { withAuth } from "@/lib/api/handler";
 
 // Initialize Drivers
 const resend = new Resend(process.env.RESEND_API_KEY || "re_123456789");
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { user_id }) => {
     const startTime = performance.now();
     let status = 200;
-
-    // Auth Check: Middleware now injects x-user-id from Key OR Session
-    const userId = req.headers.get("x-user-id") || "";
-
-    // Safety Fallback: If middleware fails to block unauthorized requests (unlikely), block here.
-    // However, we strictly rely on middleware for access control now.
-    // But for non-middleware environments (local?), we might want a check.
-    if (!userId) {
-        return NextResponse.json({ error: "Unauthorized: No User ID identified" }, { status: 401 });
-    }
 
     try {
         // 1. Parse Body
@@ -75,7 +66,7 @@ export async function POST(req: NextRequest) {
         // 4. Log Usage (2 Credits for Mail)
         const duration = Math.round(performance.now() - startTime);
         UsageService.logRequest({
-            user_id: userId,
+            user_id: user_id,
             endpoint: "/api/v1/mail",
             method: "POST",
             status_code: 200,
@@ -106,9 +97,9 @@ export async function POST(req: NextRequest) {
 
         // Log Failure
         const duration = Math.round(performance.now() - startTime);
-        if (userId) {
+        if (user_id) {
             UsageService.logRequest({
-                user_id: userId,
+                user_id: user_id,
                 endpoint: "/api/v1/mail",
                 method: "POST",
                 status_code: status,
@@ -121,4 +112,4 @@ export async function POST(req: NextRequest) {
             details: errorDetails
         }, { status });
     }
-}
+});

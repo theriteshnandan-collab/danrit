@@ -1,8 +1,8 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { scrapeUrl } from "@/lib/scraper";
 import { z } from "zod";
 import { UsageService } from "@/lib/services/usage";
+import { withAuth } from "@/lib/api/handler";
 
 export const maxDuration = 60; // Allow 60s for scraping
 
@@ -11,19 +11,11 @@ const bodySchema = z.object({
     format: z.enum(["markdown", "html", "text"]).optional().default("markdown"),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { user_id }) => {
     const startTime = performance.now();
     let status = 200;
-    let userId = "";
 
     try {
-        // 1. Get User from Header
-        userId = req.headers.get("x-user-id") || "";
-        if (!userId) {
-            status = 401;
-            return NextResponse.json({ error: "Unauthorized" }, { status });
-        }
-
         // 2. Parse Body
         const json = await req.json();
         const { url, format } = bodySchema.parse(json);
@@ -33,9 +25,9 @@ export async function POST(req: NextRequest) {
 
         // 4. Log Success
         const duration = Math.round(performance.now() - startTime);
-        // Fire-and-forget logging to not block response
+        // Fire-and-forget logging
         UsageService.logRequest({
-            user_id: userId,
+            user_id: user_id, // Secure ID from Key
             endpoint: "/api/v1/scrape",
             method: "POST",
             status_code: 200,
@@ -65,9 +57,9 @@ export async function POST(req: NextRequest) {
 
         // Log Failure
         const duration = Math.round(performance.now() - startTime);
-        if (userId) {
+        if (user_id) {
             UsageService.logRequest({
-                user_id: userId,
+                user_id: user_id,
                 endpoint: "/api/v1/scrape",
                 method: "POST",
                 status_code: status,
@@ -80,4 +72,4 @@ export async function POST(req: NextRequest) {
             details: errorDetails
         }, { status });
     }
-}
+});

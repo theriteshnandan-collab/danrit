@@ -3,25 +3,18 @@ import { z } from "zod";
 import dns from "dns/promises";
 import { UsageService } from "@/lib/services/usage";
 import { DnsRequestSchema } from "@/lib/types/schema";
+import { withAuth } from "@/lib/api/handler";
 
 export const maxDuration = 10;
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req, { user_id }) => {
     const startTime = performance.now();
     let status = 200;
-    let userId = "";
 
     let domain = "";
     let type = "";
 
     try {
-        // 1. Auth Check (Ironclad)
-        userId = req.headers.get("x-user-id") || "";
-        if (!userId) {
-            status = 401;
-            return NextResponse.json({ error: "Unauthorized" }, { status });
-        }
-
         // 2. Parse Body
         const json = await req.json();
         const parsedBody = DnsRequestSchema.parse(json);
@@ -57,7 +50,7 @@ export async function POST(req: NextRequest) {
         // 4. Log Usage (1 Credit for DNS)
         const duration = Math.round(performance.now() - startTime);
         UsageService.logRequest({
-            user_id: userId,
+            user_id: user_id,
             endpoint: "/api/v1/dns",
             method: "POST",
             status_code: 200,
@@ -95,9 +88,9 @@ export async function POST(req: NextRequest) {
 
         // Log Failure
         const duration = Math.round(performance.now() - startTime);
-        if (userId) {
+        if (user_id) {
             UsageService.logRequest({
-                user_id: userId,
+                user_id: user_id,
                 endpoint: "/api/v1/dns",
                 method: "POST",
                 status_code: status,
@@ -110,4 +103,4 @@ export async function POST(req: NextRequest) {
             details: errorDetails
         }, { status });
     }
-}
+});
