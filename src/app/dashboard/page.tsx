@@ -27,12 +27,11 @@ async function DashboardContent() {
     ]);
 
     // Derived Stats
+    // Derived Stats
     const stats = {
         totalRequests: usageStats.total_requests,
         creditsUsed: usageStats.total_credits_used,
-        successRate: usageStats.total_requests > 0
-            ? Math.round(((usageStats.total_requests - usageStats.failed_requests) / usageStats.total_requests) * 100)
-            : 100,
+        successRate: usageStats.success_rate,
         activeKeys: keys.data?.filter(k => k.status === 'active').length || 0
     };
 

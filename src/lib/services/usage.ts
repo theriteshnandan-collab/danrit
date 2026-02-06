@@ -40,6 +40,17 @@ export class UsageService {
         }
     }
 
+    static async getUserLogs(user_id: string, limit: number = 10) {
+        const { data } = await supabase
+            .from("usage_logs")
+            .select("*")
+            .eq("user_id", user_id)
+            .order("created_at", { ascending: false })
+            .limit(limit);
+
+        return data || [];
+    }
+
     /**
      * Retrieves aggregated stats for a user.
      */
@@ -53,28 +64,24 @@ export class UsageService {
         // 2. Success Rate (Last 1000 requests)
         const { data: recentLogs } = await supabase
             .from("usage_logs")
-            .select("status_code")
+            .select("status_code, cost")
             .eq("user_id", user_id)
             .order("created_at", { ascending: false })
             .limit(1000);
 
         const successCount = recentLogs?.filter((l: { status_code: number }) => l.status_code === 200).length || 0;
         const totalRecent = recentLogs?.length || 1;
-        const successRate = (successCount / totalRecent) * 100;
+        const successRate = totalRecent > 0 ? (successCount / totalRecent) * 100 : 100;
 
-        // 3. Recent Logs
-        const { data: logs } = await supabase
-            .from("usage_logs")
-            .select("*")
-            .eq("user_id", user_id)
-            .order("created_at", { ascending: false })
-            .limit(10);
+        // Calculate credits used (Mock: sum of cost in recent logs, or simplified)
+        // ideally we would do a sum query, but for now let's simple sum recent or default
+        const totalCreditsUsed = totalRequests ? totalRequests * 1 : 0; // Assuming 1 credit per request for now
 
         return {
             total_requests: totalRequests || 0,
             success_rate: parseFloat(successRate.toFixed(1)),
-            recent_logs: logs || [],
-            remaining_credits: 999999, // Placeholder until billing is live
+            total_credits_used: totalCreditsUsed,
+            remaining_credits: 999999, // Placeholder
         };
     }
 }
