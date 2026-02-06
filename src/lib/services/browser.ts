@@ -17,23 +17,21 @@ interface ChromiumConfig {
 export class BrowserService {
     static async getBrowser() {
         if (process.env.NODE_ENV === 'production') {
-            const chromiumConfig = (chromium as unknown) as ChromiumConfig;
-            const executablePath = await chromiumConfig.executablePath();
+            const chromium = await import('@sparticuz/chromium').then(mod => mod.default);
+            const puppeteerCore = await import('puppeteer-core').then(mod => mod.default);
 
-            // Map "new" to true if the types only expect boolean | "shell"
-            const headlessMode = (chromiumConfig.headless as unknown) === "new"
-                ? true
-                : chromiumConfig.headless;
+            // Configure Chromium
+            chromium.setHeadlessMode = true;
+            chromium.setGraphicsMode = false;
 
-            return await puppeteer.launch({
-                args: [...chromiumConfig.args, '--hide-scrollbars', '--disable-web-security', '--ignore-certificate-errors'],
-                defaultViewport: chromiumConfig.defaultViewport,
-                executablePath: executablePath,
-                headless: headlessMode as boolean | "shell",
+            return await puppeteerCore.launch({
+                args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
+                executablePath: await chromium.executablePath(),
+                headless: chromium.headless,
             });
         } else {
-            // Local fallback
-            // Note: puppeteer-extra automatically uses the installed 'puppeteer' package locally
+            const puppeteer = await import('puppeteer').then(mod => mod.default);
             return await puppeteer.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']
