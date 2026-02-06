@@ -1,7 +1,7 @@
 import chromium from '@sparticuz/chromium-min';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker-puppeteer-extra';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 
 // 1. Configure Plugins (The "Ghost" Mode)
 puppeteer.use(StealthPlugin());
