@@ -113,6 +113,8 @@ export interface SharedApiResult {
     content?: string;
     url?: string;
     image?: string;
+    base64?: string;
+    mime_type?: string;
     records?: unknown[];
     success?: boolean;
     error?: string;
