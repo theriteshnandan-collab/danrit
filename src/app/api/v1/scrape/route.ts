@@ -27,27 +27,68 @@ export const POST = withAuth(async (req, { user_id }) => {
 
         // 3. Scrape (Danrit Engine)
         const result = await scrapeUrl(url, { format });
+        const body = bodySchema.parse(json); // Renamed `url, format` to `body` for clarity with proxy
 
-        // 4. Log Success
-        const duration = Math.round(performance.now() - startTime);
-        // Fire-and-forget logging
-        UsageService.logRequest({
-            user_id: user_id, // Secure ID from Key
-            endpoint: "/api/v1/scrape",
-            method: "POST",
-            status_code: 200,
-            duration_ms: duration,
-        });
+        // --- PHASE 107: THE BRIDGE ---
+        // Forward request to Danrit Reader Microservice
+        const READER_URL = process.env.DANRIT_READER_URL || "http://localhost:3002";
 
-        // 5. Return Data
-        return NextResponse.json({
-            success: true,
-            data: result,
-            meta: {
-                duration_ms: duration,
-                credits_used: 1
+        console.log(`[BRIDGE] Forwarding to Reader: ${READER_URL}/v1/scrape`);
+
+        try {
+            const readerResponse = await fetch(`${READER_URL}/v1/scrape`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(process.env.READER_API_KEY ? { "x-api-key": process.env.READER_API_KEY } : {})
+                },
+                body: JSON.stringify({
+                    url: body.url,
+                    render: true, // Always use render for best results
+                    screenshot: false // Optional: toggle based on plan
+                })
+            });
+
+            if (!readerResponse.ok) {
+                const errorText = await readerResponse.text();
+                throw new Error(`Reader Service Error: ${readerResponse.status} ${errorText}`);
             }
-        });
+
+            const readerData = await readerResponse.json();
+
+            // Transform Reader format to internal format if needed
+            // Reader returns: { success: true, data: { ... } }
+            const result = readerData.data;
+
+            const duration = performance.now() - startTime;
+            await UsageService.recordTransaction(user_id, "scrape", 1); // 1 credit
+
+            return NextResponse.json({
+                status: "success",
+                data: {
+                    title: result.title,
+                    content: result.content,
+                    textContent: result.textContent,
+                    metadata: {
+                        byline: result.byline,
+                        siteName: result.siteName,
+                        url: result.url
+                    }
+                },
+                meta: {
+                    duration: Math.round(duration),
+                    engine: "danrit-reader-v1",
+                    mode: "stealth"
+                }
+            });
+
+        } catch (error: any) {
+            console.error("[BRIDGE] Error:", error);
+            return NextResponse.json(
+                { error: error.message || "Failed to contact Reader Service" },
+                { status: 502 } // Bad Gateway
+            );
+        }
 
     } catch (error) {
         status = 500;
