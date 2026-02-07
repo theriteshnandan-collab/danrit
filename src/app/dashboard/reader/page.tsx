@@ -183,7 +183,10 @@ export default function ReaderPage() {
                             </pre>
                         </div>
                     </div>
-            )}
                 </div>
-            );
+                </div>
+    )
+}
+        </div >
+    );
 }
