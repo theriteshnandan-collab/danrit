@@ -40,6 +40,24 @@ export class UsageService {
         }
     }
 
+    /**
+     * Records a successful transaction/action (billing event).
+     */
+    static async recordTransaction(user_id: string, action: string, cost: number) {
+        const { error } = await supabase.from("usage_logs").insert({
+            user_id,
+            endpoint: action, // e.g., "scrape"
+            method: "TRANSACTION",
+            status_code: 200,
+            duration_ms: 0,
+            cost: cost
+        });
+
+        if (error) {
+            console.error("❌ Transaction Logging Failed:", error);
+        }
+    }
+
     static async getUserLogs(user_id: string, limit: number = 10) {
         const { data } = await supabase
             .from("usage_logs")
