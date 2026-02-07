@@ -4,6 +4,8 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
     // 0. MAINTENANCE MODE CHECK (The Safety Lock)
+    // 0. MAINTENANCE MODE CHECK (DISABLED - OPEN ACCESS)
+    /*
     if (process.env.MAINTENANCE_MODE === "true") {
         const bypassCookie = request.cookies.get("x-danrit-maintenance-bypass");
         const path = request.nextUrl.pathname;
@@ -23,6 +25,7 @@ export async function middleware(request: NextRequest) {
             }
         }
     }
+    */
 
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
         console.error("❌ FATAL: SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables.");
