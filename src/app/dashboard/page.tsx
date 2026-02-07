@@ -107,7 +107,7 @@ async function DashboardContent() {
                             </tr>
                         </thead>
                         <tbody>
-                            {logs.slice(0, 5).map((log: any, i: number) => (
+                            {logs.slice(0, 5).map((log: { endpoint: string; status_code: number; duration_ms: number; created_at: string }, i: number) => (
                                 <tr key={i} className="border-b border-[var(--border)] last:border-b-0">
                                     <td className="p-4 font-mono">{log.endpoint}</td>
                                     <td className="p-4">

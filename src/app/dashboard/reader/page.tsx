@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, Copy, Check, Image as ImageIcon } from "lucide-react";
+import { Send, Loader2, Copy, Check } from "lucide-react";
 
 interface ScrapeResult {
     title: string;
@@ -43,8 +43,9 @@ export default function ReaderPage() {
             }
 
             setResult(data.data);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Scrape failed";
+            setError(message);
         } finally {
             setLoading(false);
         }

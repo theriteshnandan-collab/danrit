@@ -26,7 +26,7 @@ export const POST = withAuth(async (req, { user_id }) => {
         const { url, format } = bodySchema.parse(json);
 
         // 3. Scrape (Danrit Engine)
-        const result = await scrapeUrl(url, { format });
+        await scrapeUrl(url, { format });
         const body = bodySchema.parse(json); // Renamed `url, format` to `body` for clarity with proxy
 
         // --- PHASE 107: THE BRIDGE ---
@@ -82,10 +82,11 @@ export const POST = withAuth(async (req, { user_id }) => {
                 }
             });
 
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Unknown Error";
             console.error("[BRIDGE] Error:", error);
             return NextResponse.json(
-                { error: error.message || "Failed to contact Reader Service" },
+                { error: message || "Failed to contact Reader Service" },
                 { status: 502 } // Bad Gateway
             );
         }
