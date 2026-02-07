@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, Copy, Check, Spider, FileText } from "lucide-react";
+import { Send, Loader2, Copy, Check, Workflow, FileText } from "lucide-react";
 
 interface ScrapeResult {
     title: string;
     content: string;
     textContent: string;
+    url: string; // Lifted for easier access
     metadata: {
         byline: string | null;
         siteName: string | null;
@@ -144,7 +145,7 @@ export default function ReaderPage() {
                                 onChange={(e) => setCrawlMode(e.target.checked)}
                                 className="w-5 h-5 bg-transparent border-2 border-[var(--signal-orange)] checked:bg-[var(--signal-orange)] checked:border-[var(--signal-orange)]"
                             />
-                            <Spider size={16} className={crawlMode ? "text-[var(--signal-orange)]" : "text-[var(--ash)]"} />
+                            <Workflow size={16} className={crawlMode ? "text-[var(--signal-orange)]" : "text-[var(--ash)]"} />
                             <span className={crawlMode ? "text-[var(--signal-orange)]" : "text-[var(--ash)]"}>
                                 PHANTOM CRAWLER (Multi-Page)
                             </span>
@@ -179,7 +180,7 @@ export default function ReaderPage() {
                             </>
                         ) : (
                             <>
-                                {crawlMode ? <Spider size={18} /> : <Send size={18} />}
+                                {crawlMode ? <Workflow size={18} /> : <Send size={18} />}
                                 {crawlMode ? "ACTIVATE CRAWLER" : "ACTIVATE READER"}
                             </>
                         )}
