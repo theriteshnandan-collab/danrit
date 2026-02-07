@@ -12,6 +12,7 @@ interface ScrapeResult {
         siteName: string | null;
         url: string;
     };
+    screenshot?: string;
 }
 
 export default function ReaderPage() {
@@ -25,6 +26,11 @@ export default function ReaderPage() {
 
     async function handleScrape() {
         if (!url) return;
+
+        // Sanitize Input (Fix user typos like HTTPS:\\)
+        const sanitizedUrl = url.replace(/\\/g, "/").replace(/^(http[s]?):\/([^\/])/, "$1://$2");
+        if (sanitizedUrl !== url) setUrl(sanitizedUrl);
+
         setLoading(true);
         setError(null);
         setResult(null);
@@ -140,27 +146,44 @@ export default function ReaderPage() {
 
             {/* RESULT */}
             {result && (
-                <div className="panel">
-                    <div className="panel-header flex items-center justify-between">
-                        <div>
-                            <span className="label">EXTRACTED CONTENT</span>
-                            <h2 className="text-xl font-heading mt-1">{result.title}</h2>
-                            {result.metadata.siteName && (
-                                <p className="text-xs text-[var(--ash)] mt-1">{result.metadata.siteName}</p>
-                            )}
+                <div className="space-y-6">
+                    {/* SCREENSHOT VISUAL */}
+                    {result.screenshot && (
+                        <div className="panel overflow-hidden">
+                            <div className="panel-header">
+                                <span className="label">VISUAL CAPTURE</span>
+                            </div>
+                            <div className="relative w-full aspect-video bg-black">
+                                <img
+                                    src={result.screenshot}
+                                    alt="Scraped Screenshot"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
                         </div>
-                        <button onClick={copyToClipboard} className="btn-secondary flex items-center gap-2">
-                            {copied ? <Check size={14} /> : <Copy size={14} />}
-                            {copied ? "COPIED" : "COPY"}
-                        </button>
+                    )}
+
+                    <div className="panel">
+                        <div className="panel-header flex items-center justify-between">
+                            <div>
+                                <span className="label">EXTRACTED CONTENT</span>
+                                <h2 className="text-xl font-heading mt-1">{result.title}</h2>
+                                {result.metadata.siteName && (
+                                    <p className="text-xs text-[var(--ash)] mt-1">{result.metadata.siteName}</p>
+                                )}
+                            </div>
+                            <button onClick={copyToClipboard} className="btn-secondary flex items-center gap-2">
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                                {copied ? "COPIED" : "COPY"}
+                            </button>
+                        </div>
+                        <div className="panel-body">
+                            <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
+                                {result.content}
+                            </pre>
+                        </div>
                     </div>
-                    <div className="panel-body">
-                        <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
-                            {result.content}
-                        </pre>
-                    </div>
-                </div>
             )}
-        </div>
-    );
+                </div>
+            );
 }
