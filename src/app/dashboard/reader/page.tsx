@@ -184,9 +184,7 @@ export default function ReaderPage() {
                         </div>
                     </div>
                 </div>
-                </div>
-    )
-}
-        </div >
+            )}
+        </div>
     );
 }
