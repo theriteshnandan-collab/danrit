@@ -1,129 +1,175 @@
+/* =========================================
+   DANRIT: THE SWISS INDUSTRIAL DESIGN SYSTEM
+   ========================================= */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: #000000;
-    /* Pure Void */
-    --foreground: #ffffff;
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-surface: rgba(255, 255, 255, 0.03);
-    --neon-blue: #2563eb;
-    --neon-red: #ef4444;
-    --neon-orange: #f97316;
-    --neon-green: #22c55e;
+    /* THE CORE PALETTE */
+    --void: #050505;
+    --bone: #E5E5E5;
+    --ash: #888888;
+    --grid: #1a1a1a;
+    --border: #222222;
+
+    /* SIGNAL COLORS (Use sparingly) */
+    --signal-green: #22C55E;
+    --signal-red: #EF4444;
+    --signal-amber: #F59E0B;
+
+    /* SPACING (4px baseline) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-black text-white antialiased selection:bg-blue-600/30 selection:text-blue-200;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    @apply text-[#E5E5E5] antialiased;
+    background: var(--void);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+
+  /* THE GRID OVERLAY */
+  .grid-overlay {
+    background-image:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* THE PANEL (The Swiss Card) */
+  .panel {
+    @apply border border-[#222];
+    background: var(--void);
+  }
+
+  .panel-header {
+    @apply px-6 py-4 border-b border-[#222];
+  }
+
+  .panel-body {
+    @apply p-6;
+  }
+
+  /* THE LABEL (Tiny Uppercase Label) */
+  .label {
+    @apply text-[10px] uppercase tracking-[1px] text-[#888] font-semibold;
+  }
+
+  /* THE DATA VALUE (Big Monospace Number/Text) */
+  .data-value {
+    @apply text-2xl font-light tracking-tight text-[#E5E5E5];
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* THE BUTTON (Industrial) */
+  .btn-primary {
+    @apply px-6 py-3 bg-[#E5E5E5] text-[#050505] text-sm uppercase tracking-wider font-semibold;
+    @apply hover:bg-white transition-colors duration-100;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border border-[#333] text-[#888] text-sm uppercase tracking-wider;
+    @apply hover:border-[#E5E5E5] hover:text-[#E5E5E5] transition-colors duration-100;
+  }
+
+  /* THE INPUT (Industrial) */
+  .input-industrial {
+    @apply w-full px-4 py-3 bg-transparent border border-[#333] text-[#E5E5E5];
+    @apply focus:outline-none focus:border-[#E5E5E5] transition-colors duration-100;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* STATUS INDICATORS */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-dot.online {
+    @apply bg-[#22C55E];
+  }
+
+  .status-dot.offline {
+    @apply bg-[#EF4444];
+  }
+
+  .status-dot.pending {
+    @apply bg-[#F59E0B];
   }
 }
 
 @layer utilities {
 
-  /* TOPOGRAPHIC AMBIENCE */
-  .bg-void-animation {
-    background-color: #000000;
-    background-image:
-      radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(239, 68, 68, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(34, 197, 94, 0.05) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
-    animation: breathe 15s ease-in-out infinite alternate;
-  }
-
-  @keyframes breathe {
-    0% {
-      opacity: 0.8;
-      transform: scale(1);
-    }
-
-    100% {
-      opacity: 1;
-      transform: scale(1.05);
-    }
-  }
-
-  /* GRID OVERLAY */
-  .tech-grid {
-    background-size: 50px 50px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-  }
-
-  /* GLASSMORPHISM - OBSIDIAN GRADE */
-  .glass-panel {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_0_0_1px_rgba(0, 0, 0, 0.5)];
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .glass-panel:hover {
-    @apply border-white/20 bg-white/5;
-    box-shadow: 0 0 30px -10px rgba(37, 99, 235, 0.15);
-  }
-
-  /* TYPOGRAPHY */
+  /* TYPOGRAPHY UTILITIES */
   .font-heading {
-    @apply font-bold tracking-[-0.04em] uppercase;
+    @apply font-semibold uppercase tracking-[-0.02em];
   }
 
-  .font-mono-tight {
-    @apply font-mono tracking-tighter text-[10px] uppercase text-zinc-500;
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 
-  /* NEON ACCENTS */
-  .neon-text-blue {
-    text-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+  /* THE GRID LAYOUT HELPERS */
+  .grid-swiss {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .grid-swiss>* {
+    background: var(--void);
+  }
+
+  /* SIDEBAR WIDTH */
+  .sidebar-width {
+    width: 240px;
+    min-width: 240px;
+  }
+
+  /* STATUS BAR HEIGHT */
+  .statusbar-height {
+    height: 40px;
   }
 }
 
-/* CUSTOM SCROLLBAR */
+/* CUSTOM SCROLLBAR (Minimal) */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-black;
+  background: var(--void);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 rounded-full hover:bg-zinc-600 transition-colors;
+  background: var(--border);
 }
 
-/* SCANLINE */
-.scan-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: rgba(37, 99, 235, 0.3);
-  opacity: 0.2;
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
-  animation: scan 6s linear infinite;
-  z-index: 50;
-  pointer-events: none;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ash);
 }
 
-@keyframes scan {
-  0% {
-    top: -10%;
-    opacity: 0;
-  }
-
-  10% {
-    opacity: 0.5;
-  }
-
-  90% {
-    opacity: 0.5;
-  }
-
-  100% {
-    top: 110%;
-    opacity: 0;
-  }
+/* SELECTION */
+::selection {
+  background: rgba(229, 229, 229, 0.2);
+  color: white;
 }

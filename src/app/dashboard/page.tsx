@@ -1,14 +1,10 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { StatsCards } from "@/components/dashboard/StatsCards";
-import { RequestLogTable } from "@/components/dashboard/RequestLogTable";
-import { ApiKeyManager } from "@/components/dashboard/ApiKeyManager";
-import { EngineStatus } from "@/components/dashboard/EngineStatus";
 import { UsageService } from "@/lib/services/usage";
+import Link from "next/link";
+import { ArrowRight, FileText, Video, Cpu } from "lucide-react";
 
-// 30 Seconds revalidation for near real-time feels without overload
 export const revalidate = 30;
 
 async function DashboardContent() {
@@ -21,63 +17,114 @@ async function DashboardContent() {
 
     // Parallel Data Fetching
     const [logs, keys, usageStats] = await Promise.all([
-        UsageService.getUserLogs(user.id, 10), // Limit 10
+        UsageService.getUserLogs(user.id, 10),
         supabase.from('api_keys').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         UsageService.getUserStats(user.id)
     ]);
 
-    // Derived Stats
-    // Derived Stats
     const stats = {
-        totalRequests: usageStats.total_requests,
-        creditsUsed: usageStats.total_credits_used,
-        successRate: usageStats.success_rate,
+        totalRequests: usageStats.total_requests || 0,
+        creditsUsed: usageStats.total_credits_used || 0,
+        successRate: usageStats.success_rate || 0,
         activeKeys: keys.data?.filter(k => k.status === 'active').length || 0
     };
 
     return (
         <div className="space-y-8">
-            <DashboardHeader
-                title="Command Center"
-                subtitle="Manage your engines, keys, and usage."
-            />
+            {/* HEADER */}
+            <div>
+                <span className="label">COMMAND CENTER</span>
+                <h1 className="text-3xl font-heading mt-2">Dashboard</h1>
+            </div>
 
-            <StatsCards stats={stats} />
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Activity Logs */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-medium text-white">Live Activity</h3>
-                        </div>
-                        <RequestLogTable logs={logs} />
-                    </div>
-
-                    {/* API Keys */}
-                    <ApiKeyManager keys={keys.data || []} />
+            {/* HERO GRID: STATS */}
+            <div className="grid-swiss">
+                <div className="col-span-3 p-6">
+                    <span className="label">Total Requests</span>
+                    <p className="data-value mt-2">{stats.totalRequests.toLocaleString()}</p>
                 </div>
+                <div className="col-span-3 p-6">
+                    <span className="label">Credits Used</span>
+                    <p className="data-value mt-2">{stats.creditsUsed.toLocaleString()}</p>
+                </div>
+                <div className="col-span-3 p-6">
+                    <span className="label">Success Rate</span>
+                    <p className="data-value mt-2">{stats.successRate}%</p>
+                </div>
+                <div className="col-span-3 p-6">
+                    <span className="label">Active API Keys</span>
+                    <p className="data-value mt-2">{stats.activeKeys}</p>
+                </div>
+            </div>
 
-                <div className="space-y-8">
-                    {/* Engine Health */}
-                    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
-                        <EngineStatus />
+            {/* TOOLS GRID */}
+            <div>
+                <span className="label">TOOLS</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] mt-4 bg-[var(--border)]">
+                    {/* READER */}
+                    <Link href="/dashboard/reader" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <FileText size={24} className="text-[var(--ash)] group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">READER</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Extract content from any URL. Stealth mode enabled.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* VIDEO (Disabled) */}
+                    <div className="panel p-6 opacity-40 cursor-not-allowed">
+                        <Video size={24} className="text-[var(--ash)]" />
+                        <h3 className="text-lg font-heading mt-4">VIDEO</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Download 4K video from YouTube, Twitter, Instagram.</p>
+                        <div className="flex items-center gap-1 mt-4 text-[8px] uppercase border border-[var(--ash)] px-2 py-1 w-fit">
+                            COMING SOON
+                        </div>
                     </div>
 
-                    {/* Quick Start / Docs */}
-                    <div className="p-6 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 border border-indigo-500/20 rounded-xl">
-                        <h3 className="text-sm font-medium text-indigo-400 mb-2">Integration Guide</h3>
-                        <p className="text-xs text-zinc-400 mb-4">
-                            Learn how to connect Danrit engines to your application using our unified API.
-                        </p>
-                        <a
-                            href="https://github.com/theriteshnandan-collab/danrit"
-                            target="_blank"
-                            className="text-xs font-bold text-white hover:text-indigo-400 transition-colors"
-                        >
-                            Read Documentation &rarr;
-                        </a>
-                    </div>
+                    {/* SYSTEMS */}
+                    <Link href="/dashboard/systems" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Cpu size={24} className="text-[var(--ash)] group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">SYSTEMS</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Monitor remote microservices and server health.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            VIEW <ArrowRight size={12} />
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* RECENT ACTIVITY */}
+            <div>
+                <span className="label">RECENT ACTIVITY</span>
+                <div className="panel mt-4">
+                    <table className="w-full text-xs">
+                        <thead className="border-b border-[var(--border)]">
+                            <tr className="text-left text-[var(--ash)]">
+                                <th className="p-4 font-normal uppercase tracking-wider">Endpoint</th>
+                                <th className="p-4 font-normal uppercase tracking-wider">Status</th>
+                                <th className="p-4 font-normal uppercase tracking-wider">Duration</th>
+                                <th className="p-4 font-normal uppercase tracking-wider">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {logs.slice(0, 5).map((log: any, i: number) => (
+                                <tr key={i} className="border-b border-[var(--border)] last:border-b-0">
+                                    <td className="p-4 font-mono">{log.endpoint}</td>
+                                    <td className="p-4">
+                                        <span className={`status-dot ${log.status_code === 200 ? 'online' : 'offline'} inline-block mr-2`}></span>
+                                        {log.status_code}
+                                    </td>
+                                    <td className="p-4 font-mono text-[var(--ash)]">{log.duration_ms}ms</td>
+                                    <td className="p-4 text-[var(--ash)]">{new Date(log.created_at).toLocaleTimeString()}</td>
+                                </tr>
+                            ))}
+                            {logs.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="p-6 text-center text-[var(--ash)]">No activity yet. Make your first API call.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -86,12 +133,8 @@ async function DashboardContent() {
 
 export default function DashboardPage() {
     return (
-        <div className="min-h-screen bg-black pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                <Suspense fallback={<div className="text-zinc-500">Loading Command Center...</div>}>
-                    <DashboardContent />
-                </Suspense>
-            </div>
-        </div>
+        <Suspense fallback={<div className="text-[var(--ash)]">Loading Command Center...</div>}>
+            <DashboardContent />
+        </Suspense>
     );
 }
