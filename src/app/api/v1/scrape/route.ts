@@ -11,6 +11,17 @@ export async function GET() {
     return NextResponse.json({ status: "active", engine: "scrape-v1" });
 }
 
+export async function OPTIONS() {
+    return new NextResponse(null, {
+        status: 200,
+        headers: {
+            "Allow": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key"
+        }
+    });
+}
+
 const bodySchema = z.object({
     url: z.string().url(),
     format: z.enum(["markdown", "html", "text"]).optional().default("markdown"),

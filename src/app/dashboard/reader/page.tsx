@@ -36,10 +36,12 @@ export default function ReaderPage() {
                 body: JSON.stringify({ url, render, screenshot })
             });
 
-            const data = await res.json();
+            const isJson = res.headers.get("content-type")?.includes("application/json");
+            const data = isJson ? await res.json() : null;
 
-            if (!res.ok || data.error) {
-                throw new Error(data.error || "Scrape failed");
+            if (!res.ok) {
+                const errorMsg = data?.error || await res.text() || "Unknown Error";
+                throw new Error(`Server Error (${res.status}): ${errorMsg}`);
             }
 
             setResult(data.data);
