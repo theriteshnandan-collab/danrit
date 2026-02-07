@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Loader2, Mail, Lock, Chrome } from "lucide-react";
+import { Shield, Loader2, Mail, Lock, Hexagon } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -12,7 +12,7 @@ export default function LoginPage() {
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const supabase = createClient();
-    const router = useRouter();
+    const useRouterHook = useRouter();
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,8 +36,8 @@ export default function LoginPage() {
                     password,
                 });
                 if (error) throw error;
-                router.push("/");
-                router.refresh();
+                useRouterHook.push("/");
+                useRouterHook.refresh();
             }
         } catch (err) {
             const error = err as Error;
@@ -50,19 +50,13 @@ export default function LoginPage() {
     const handleGoogleAuth = async () => {
         setIsLoading(true);
         try {
-            // Dynamic Origin Detection with Explicit Production Override
             let origin = window.location.origin;
             if (window.location.hostname === "danrit.tech") {
                 origin = "https://danrit.tech";
             }
-
-            console.log("Auth Redirecting to:", `${origin}/auth/callback`);
-
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
-                options: {
-                    redirectTo: `${origin}/auth/callback`,
-                },
+                options: { redirectTo: `${origin}/auth/callback` },
             });
             if (error) throw error;
         } catch (err) {
@@ -73,113 +67,106 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-background flex items-center justify-center p-4 font-mono">
-            {/* Background Grain Effect */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="min-h-screen w-full bg-[#050505] flex items-center justify-center p-4 font-sans relative overflow-hidden">
+            {/* AMBIENT GLOWS (The 3rd Color: CYAN) */}
+            <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#00F0FF] opacity-[0.03] blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-[#FF4F00] opacity-[0.03] blur-[100px] pointer-events-none" />
 
-            <div className="w-full max-w-md bg-background border border-[var(--border)] relative z-10 overflow-hidden shadow-2xl">
-                {/* Accent Top Bar */}
-                <div className="h-1 bg-primary w-full" />
+            {/* THE MONOLITH CARD */}
+            <div className="w-full max-w-[400px] bg-[#0A0A0A] border border-[#222] relative z-10 shadow-[0_0_0_1px_rgba(255,255,255,0.05)]">
+                {/* STRIPE HEADER (The 2nd Color: ORANGE) */}
+                <div className="h-1 bg-[#FF4F00] w-full" />
 
                 <div className="p-8">
-                    <header className="text-center mb-8">
-                        <div className="w-12 h-12 border border-[var(--border)] flex items-center justify-center mx-auto mb-4 bg-muted/50">
-                            <Shield className="text-primary" size={24} />
+                    <header className="mb-10">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Hexagon className="text-[#FF4F00]" size={24} strokeWidth={2} />
+                            <h1 className="text-xl font-bold tracking-tight text-white">DANRIT<span className="text-[#444]">_GATE</span></h1>
                         </div>
-                        <h1 className="text-2xl font-black tracking-tighter text-white uppercase">PDF-JET GATE</h1>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-bold">Secure Access Terminal</p>
+                        <p className="text-[11px] text-[#666] uppercase tracking-widest font-mono">Secure Access Terminal v2.1</p>
                     </header>
-
-                    <style jsx global>{`
-                        input:-webkit-autofill,
-                        input:-webkit-autofill:hover, 
-                        input:-webkit-autofill:focus, 
-                        input:-webkit-autofill:active {
-                            -webkit-box-shadow: 0 0 0 30px black inset !important;
-                            -webkit-text-fill-color: white !important;
-                            caret-color: white !important;
-                        }
-                    `}</style>
 
                     <button
                         onClick={handleGoogleAuth}
                         disabled={isLoading}
-                        className="w-full bg-white text-black py-3 mb-6 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3 border border-white/20"
+                        className="w-full bg-[#111] hover:bg-[#161616] text-white py-3 border border-[#333] mb-6 flex items-center justify-center gap-3 transition-all duration-200 group"
                     >
-                        {isLoading ? <Loader2 className="animate-spin" size={14} /> : <Chrome size={14} />}
-                        <span>Connect_via_Google</span>
+                        {isLoading ? <Loader2 className="animate-spin text-[#888]" size={16} /> : (
+                            <div className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center text-[10px] group-hover:bg-white group-hover:text-black transition-colors">G</div>
+                        )}
+                        <span className="text-xs font-medium tracking-wide">CONTINUE WITH GOOGLE</span>
                     </button>
 
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="h-px bg-border flex-1 opacity-20" />
-                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">OR_USE_PROTOCOL</span>
-                        <div className="h-px bg-border flex-1 opacity-20" />
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-px bg-[#222] flex-1" />
+                        <span className="text-[10px] text-[#444] font-mono">OR</span>
+                        <div className="h-px bg-[#222] flex-1" />
                     </div>
 
-                    <form onSubmit={handleAuth} className="space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">Email_Address</label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                    <form onSubmit={handleAuth} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <label htmlFor="email" className="text-[10px] font-bold text-[#666] uppercase tracking-wider">Identity</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444] group-focus-within:text-[#00F0FF] transition-colors" size={16} />
                                 <input
+                                    id="email"
+                                    name="email"
                                     type="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="operator@system.io"
-                                    className="w-full bg-black border border-white/10 py-3 pl-10 pr-4 text-sm text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-mono placeholder:text-white/20"
+                                    placeholder="OPERATOR@DANRIT.TECH"
+                                    className="w-full bg-[#050505] border border-[#222] py-3 pl-10 pr-4 text-sm text-white outline-none focus:border-[#00F0FF] transition-colors font-mono placeholder:text-[#333]"
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">Security_Pass</label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                        <div className="space-y-1.5">
+                            <label htmlFor="password" className="text-[10px] font-bold text-[#666] uppercase tracking-wider">Passcode</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444] group-focus-within:text-[#00F0FF] transition-colors" size={16} />
                                 <input
+                                    id="password"
+                                    name="password"
                                     type="password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full bg-black border border-white/10 py-3 pl-10 pr-4 text-sm text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-mono placeholder:text-white/20"
+                                    className="w-full bg-[#050505] border border-[#222] py-3 pl-10 pr-4 text-sm text-white outline-none focus:border-[#00F0FF] transition-colors font-mono placeholder:text-[#333]"
                                 />
                             </div>
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-[10px] uppercase font-bold tracking-wider animate-in fade-in slide-in-from-top-1">
-                                [Error]: {error}
+                            <div className="p-3 bg-[#110505] border border-[#FF4F00]/30 text-[#FF4F00] text-xs flex items-center gap-2">
+                                <Shield size={12} />
+                                <span>{error}</span>
                             </div>
                         )}
 
                         <button
                             disabled={isLoading}
-                            className="w-full bg-primary text-primary-foreground py-4 font-black uppercase text-xs tracking-[0.2em] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="w-full bg-[#E5E5E5] text-black py-3.5 font-bold text-xs uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isLoading ? <Loader2 className="animate-spin" size={16} /> : null}
-                            {isSignUp ? "INITIALIZE_IDENTITY" : "ESTABLISH_CONNECTION"}
+                            {isSignUp ? "INITIALIZE" : "AUTHENTICATE"}
                         </button>
                     </form>
 
-                    <div className="mt-8 pt-6 border-t border-[var(--border)] text-center">
+                    <div className="mt-6 text-center">
                         <button
                             onClick={() => setIsSignUp(!isSignUp)}
-                            className="text-[10px] text-muted-foreground uppercase tracking-widest hover:text-primary transition-colors font-bold"
+                            className="text-xs text-[#666] hover:text-[#00F0FF] transition-colors"
                         >
-                            {isSignUp ? "Existing User? Connect_Terminal" : "New Operator? Request_Access"}
+                            {isSignUp ? "Have an account? Login" : "No credentials? Request Access"}
                         </button>
                     </div>
                 </div>
 
-                <footer className="bg-muted/30 p-4 border-t border-[var(--border)] flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                        <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Auth_Node_Online</span>
-                    </div>
-                    <span className="text-[9px] text-muted-foreground opacity-30 font-bold uppercase cursor-default select-none tracking-widest">Secure TLS 1.3</span>
-                </footer>
+                <div className="h-1 w-full bg-gradient-to-r from-[#FF4F00] via-[#000000] to-[#00F0FF]" />
             </div>
         </div>
     );
 }
+
