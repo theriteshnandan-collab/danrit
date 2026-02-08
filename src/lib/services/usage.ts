@@ -79,9 +79,10 @@ export class UsageService {
                 console.error("❌ NUCLEAR REPAIR FAILED:", insertError);
                 // Return exact error to UI so user can debug
                 const keyPrefix = serviceKey ? serviceKey.substring(0, 5) + "..." : "MISSING";
+                const urlPrefix = process.env.NEXT_PUBLIC_SUPABASE_URL || "MISSING_URL";
                 return {
                     allowed: false,
-                    reason: `Profile Init Failed: ${insertError.message}. Key: ${keyPrefix}`
+                    reason: `Profile Init Failed: ${insertError.message}. Key: ${keyPrefix}, URL: ${urlPrefix}`
                 };
             }
 
