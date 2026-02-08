@@ -26,7 +26,11 @@ export default function ScreenshotPage() {
             if (res.ok && data.success) {
                 setResult(data.data.screenshot || data.data.base64);
             } else {
-                setError(data.error || "Screenshot capture failed");
+                // Parse detailed error
+                let errorMsg = data.error || "Screenshot capture failed";
+                if (data.message) errorMsg += `: ${data.message}`;
+                if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
+                setError(errorMsg);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");

@@ -31,7 +31,11 @@ export default function MailPage() {
                 setSubject("");
                 setBody("");
             } else {
-                setError(data.error || "Email sending failed");
+                // Parse detailed error
+                let errorMsg = data.error || "Email sending failed";
+                if (data.message) errorMsg += `: ${data.message}`;
+                if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
+                setError(errorMsg);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");

@@ -27,7 +27,11 @@ export default function PDFPage() {
             if (res.ok && data.success) {
                 setResult(data.data.url || data.data.base64);
             } else {
-                setError(data.error || "PDF generation failed");
+                // Parse detailed error
+                let errorMsg = data.error || "PDF generation failed";
+                if (data.message) errorMsg += `: ${data.message}`;
+                if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
+                setError(errorMsg);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");

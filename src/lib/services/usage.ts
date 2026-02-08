@@ -43,15 +43,42 @@ export class UsageService {
         }
 
         // Fetch user profile
-        const { data: profile, error } = await supabase
+        let { data: profile, error } = await supabase
             .from("profiles")
             .select("credits_balance, tier, daily_usage, last_usage_reset")
             .eq("id", user_id)
             .single();
 
+        // === SELF-HEALING: Create missing profile ===
         if (error || !profile) {
-            console.error("❌ Profile Fetch Error:", error);
-            return { allowed: false, reason: "User profile not found" };
+            console.warn(`⚠️ Profile not found for ${user_id}. Creating default profile...`);
+            const { error: insertError } = await supabase
+                .from("profiles")
+                .insert({
+                    id: user_id,
+                    credits_balance: 50,
+                    tier: "free",
+                    daily_usage: {},
+                    last_usage_reset: new Date().toISOString()
+                });
+
+            if (insertError) {
+                console.error("❌ Failed to create profile:", insertError);
+                return { allowed: false, reason: "Failed to initialize user profile. Please contact support." };
+            }
+
+            // Re-fetch newly created profile
+            const { data: newProfile } = await supabase
+                .from("profiles")
+                .select("credits_balance, tier, daily_usage, last_usage_reset")
+                .eq("id", user_id)
+                .single();
+
+            if (!newProfile) {
+                return { allowed: false, reason: "Profile creation failed. Please retry." };
+            }
+            profile = newProfile;
+            console.log(`✅ Profile auto-created for ${user_id} with 50 credits.`);
         }
 
         // Reset daily usage if new day

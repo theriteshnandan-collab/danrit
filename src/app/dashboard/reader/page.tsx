@@ -71,7 +71,10 @@ export default function ReaderPage() {
             const data = isJson ? await res.json() : null;
 
             if (!res.ok) {
-                const errorMsg = data?.error || await res.text() || "Unknown Error";
+                // Parse detailed error (especially for Rate Limits)
+                let errorMsg = data?.error || "Unknown Error";
+                if (data?.message) errorMsg += `: ${data.message}`;
+                if (data?.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
                 throw new Error(`Server Error (${res.status}): ${errorMsg}`);
             }
 
