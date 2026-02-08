@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/api/handler";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -41,8 +41,9 @@ export const POST = withAuth(async (req, { user_id }) => {
 
         const data = await response.json();
 
-        // Log Usage (0.5 credits for info)
-        await UsageService.recordTransaction(user_id, "video_info", 0.5);
+        // === DEDUCT CREDITS (Proper Tracking) ===
+        await UsageService.deductCredits(user_id, "video_info");
+        await UsageService.recordTransaction(user_id, "video_info", TOOL_CONFIG["video_info"].cost);
 
         const duration = Math.round(performance.now() - startTime);
         return NextResponse.json(data, {

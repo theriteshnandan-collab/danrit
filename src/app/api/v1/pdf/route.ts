@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 import { BrowserService } from "@/lib/services/browser";
 import { withAuth } from "@/lib/api/handler";
 
@@ -66,15 +66,11 @@ export const POST = withAuth(async (req, { user_id }) => {
 
         await browser.close();
 
-        // 4. Log Usage (5 Credits for PDF)
+        // === DEDUCT CREDITS ===
+        await UsageService.deductCredits(user_id, "pdf");
+
         const duration = Math.round(performance.now() - startTime);
-        UsageService.logRequest({
-            user_id: user_id,
-            endpoint: "/api/v1/pdf",
-            method: "POST",
-            status_code: 200,
-            duration_ms: duration,
-        });
+        await UsageService.recordTransaction(user_id, "pdf", TOOL_CONFIG["pdf"].cost);
 
         // 5. Return PDF (Base64 for Unified API)
         // Returning Base64 is cleaner for a universal JSON API than binary streams
@@ -89,7 +85,7 @@ export const POST = withAuth(async (req, { user_id }) => {
             },
             meta: {
                 duration_ms: duration,
-                credits_used: 5 // Premium charge
+                credits_used: TOOL_CONFIG["pdf"].cost
             }
         });
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { scrapeUrl } from "@/lib/scraper";
 import { z } from "zod";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 import { withAuth } from "@/lib/api/handler";
 
 export const maxDuration = 60; // Allow 60s for scraping
@@ -85,8 +85,9 @@ export const POST = withAuth(async (req, { user_id }) => {
                 const result = readerData.data;
                 const duration = performance.now() - startTime;
 
-                // Credit Cost: 1 per page
-                const creditCost = Math.max(1, result.stats.pagesScraped);
+                // === DEDUCT CREDITS (Per page scraped) ===
+                const creditCost = Math.max(1, result.stats.pagesScraped) * TOOL_CONFIG["scrape"].cost;
+                await UsageService.deductCredits(user_id, "scrape");
                 await UsageService.recordTransaction(user_id, "crawl", creditCost);
 
                 return NextResponse.json({
@@ -115,7 +116,10 @@ export const POST = withAuth(async (req, { user_id }) => {
             } else {
                 const result = readerData.data;
                 const duration = performance.now() - startTime;
-                await UsageService.recordTransaction(user_id, "scrape", 1);
+
+                // === DEDUCT CREDITS ===
+                await UsageService.deductCredits(user_id, "scrape");
+                await UsageService.recordTransaction(user_id, "scrape", TOOL_CONFIG["scrape"].cost);
 
                 return NextResponse.json({
                     status: "success",

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/api/handler";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 
-export const maxDuration = 300; // Allow 5 minutes? No, this just returns a URL.
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 export const POST = withAuth(async (req, { user_id }) => {
@@ -14,6 +14,17 @@ export const POST = withAuth(async (req, { user_id }) => {
         if (!url) {
             return NextResponse.json({ error: "Missing URL" }, { status: 400 });
         }
+
+        // === CREDIT GATEKEEPER ===
+        const cap = await UsageService.checkCap(user_id, "video_download");
+        if (!cap.allowed) {
+            return NextResponse.json({
+                error: "Rate Limit",
+                message: cap.reason,
+                credits_remaining: cap.credits_remaining
+            }, { status: 429 });
+        }
+        // === END GATEKEEPER ===
 
         const READER_URL = process.env.DANRIT_READER_URL || "http://localhost:3002";
 
@@ -30,17 +41,19 @@ export const POST = withAuth(async (req, { user_id }) => {
 
         const data = await response.json();
 
-        // Log Usage (5 credits for download/resolve)
-        await UsageService.recordTransaction(user_id, "video_download", 5.0);
+        // === DEDUCT CREDITS (Proper Tracking) ===
+        await UsageService.deductCredits(user_id, "video_download");
+        await UsageService.recordTransaction(user_id, "video_download", TOOL_CONFIG["video_download"].cost);
 
         const duration = Math.round(performance.now() - startTime);
         return NextResponse.json(data, {
             headers: { "x-duration": String(duration) }
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Internal Server Error";
         return NextResponse.json(
-            { error: error.message || "Internal Server Error" },
+            { error: message },
             { status: 500 }
         );
     }

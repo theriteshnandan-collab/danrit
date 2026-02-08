@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 import { MailRequestSchema } from "@/lib/types/schema";
 import { withAuth } from "@/lib/api/handler";
 
@@ -17,6 +17,17 @@ export const POST = withAuth(async (req, { user_id }) => {
         // 1. Parse Body
         const json = await req.json();
         const { to, subject, html, from_name } = MailRequestSchema.parse(json);
+
+        // === CREDIT GATEKEEPER ===
+        const cap = await UsageService.checkCap(user_id, "mail");
+        if (!cap.allowed) {
+            return NextResponse.json({
+                error: "Rate Limit",
+                message: cap.reason,
+                credits_remaining: cap.credits_remaining
+            }, { status: 429 });
+        }
+        // === END GATEKEEPER ===
 
         // 2. Select Driver
         const driver = process.env.MAIL_DRIVER || "resend"; // 'resend' | 'smtp'
@@ -63,15 +74,11 @@ export const POST = withAuth(async (req, { user_id }) => {
             resultData = { id: data?.id, status: "sent", provider: "resend" };
         }
 
-        // 4. Log Usage (2 Credits for Mail)
+        // === DEDUCT CREDITS ===
+        await UsageService.deductCredits(user_id, "mail");
+
         const duration = Math.round(performance.now() - startTime);
-        UsageService.logRequest({
-            user_id: user_id,
-            endpoint: "/api/v1/mail",
-            method: "POST",
-            status_code: 200,
-            duration_ms: duration,
-        });
+        await UsageService.recordTransaction(user_id, "mail", TOOL_CONFIG["mail"].cost);
 
         // 5. Return Success
         return NextResponse.json({
@@ -79,7 +86,7 @@ export const POST = withAuth(async (req, { user_id }) => {
             data: resultData,
             meta: {
                 duration_ms: duration,
-                credits_used: 2,
+                credits_used: TOOL_CONFIG["mail"].cost,
                 driver: driver
             }
         });

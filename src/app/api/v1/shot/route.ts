@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { UsageService } from "@/lib/services/usage";
+import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 import { ShotRequestSchema } from "@/lib/types/schema";
 import { BrowserService } from "@/lib/services/browser";
 import { withAuth } from "@/lib/api/handler";
@@ -46,15 +46,11 @@ export const POST = withAuth(async (req, { user_id }) => {
 
         await browser.close();
 
-        // 4. Log Usage (3 Credits for Shot)
+        // === DEDUCT CREDITS ===
+        await UsageService.deductCredits(user_id, "shot");
+
         const duration = Math.round(performance.now() - startTime);
-        UsageService.logRequest({
-            user_id: user_id,
-            endpoint: "/api/v1/shot",
-            method: "POST",
-            status_code: 200,
-            duration_ms: duration,
-        });
+        await UsageService.recordTransaction(user_id, "shot", TOOL_CONFIG["shot"].cost);
 
         // 5. Return Image (Base64)
         const base64Image = Buffer.from(buffer).toString('base64');
@@ -68,7 +64,7 @@ export const POST = withAuth(async (req, { user_id }) => {
             },
             meta: {
                 duration_ms: duration,
-                credits_used: 3
+                credits_used: TOOL_CONFIG["shot"].cost
             }
         });
 
