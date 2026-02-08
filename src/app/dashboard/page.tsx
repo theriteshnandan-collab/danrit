@@ -24,7 +24,7 @@ async function DashboardContent() {
 
     const stats = {
         totalRequests: usageStats.total_requests || 0,
-        creditsUsed: usageStats.total_credits_used || 0,
+        creditsUsed: usageStats.daily_usage || 0,
         successRate: usageStats.success_rate || 0,
         activeKeys: keys.data?.filter(k => k.status === 'active').length || 0
     };

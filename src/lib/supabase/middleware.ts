@@ -36,8 +36,9 @@ export async function updateSession(request: NextRequest) {
         !user &&
         !request.nextUrl.pathname.startsWith('/login') &&
         !request.nextUrl.pathname.startsWith('/auth') &&
-        !request.nextUrl.pathname.startsWith('/maintenance') && // Allow Maintenance Page
-        !request.nextUrl.pathname.startsWith('/api/v1/pdf') // Exclude the API engine
+        !request.nextUrl.pathname.startsWith('/maintenance') &&
+        !request.nextUrl.pathname.startsWith('/api/v1/pdf') &&
+        request.nextUrl.pathname !== '/' // Allow Landing Page
     ) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()

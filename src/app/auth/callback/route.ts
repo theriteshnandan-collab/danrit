@@ -30,15 +30,17 @@ export async function GET(request: Request) {
         )
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-            // Force Production URL to avoid http/https mismatch causing cookie loss
-            const forwardedHost = request.headers.get('x-forwarded-host') // often set by Vercel
-            const isProduction = origin.includes('danrit.tech') || (forwardedHost && forwardedHost.includes('danrit.tech'));
+            // Dynamic redirect based on environment
+            const forwardedHost = request.headers.get('x-forwarded-host'); // often set by Vercel
+            const isLocal = origin.includes('localhost');
 
-            if (isProduction) {
-                return NextResponse.redirect(`https://danrit.tech${next}`)
+            if (isLocal) {
+                return NextResponse.redirect(`${origin}${next}`);
+            } else if (forwardedHost) {
+                return NextResponse.redirect(`https://${forwardedHost}${next}`);
+            } else {
+                return NextResponse.redirect(`${origin}${next}`);
             }
-
-            return NextResponse.redirect(`${origin}${next}`)
         } else {
             console.error('Auth Exchange Error:', error);
         }
