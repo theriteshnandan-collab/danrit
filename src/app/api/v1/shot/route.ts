@@ -16,6 +16,17 @@ export const POST = withAuth(async (req, { user_id }) => {
         const json = await req.json();
         const { url, width, height, full_page } = ShotRequestSchema.parse(json);
 
+        // === CREDIT GATEKEEPER ===
+        const cap = await UsageService.checkCap(user_id, "shot");
+        if (!cap.allowed) {
+            return NextResponse.json({
+                error: "Rate Limit",
+                message: cap.reason,
+                credits_remaining: cap.credits_remaining
+            }, { status: 429 });
+        }
+        // === END GATEKEEPER ===
+
         // 3. Use Unified Browser Service
         const browser = await BrowserService.getBrowser();
         const page = await browser.newPage();

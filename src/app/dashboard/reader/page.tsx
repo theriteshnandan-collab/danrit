@@ -14,6 +14,7 @@ interface ScrapeResult {
         url: string;
     };
     screenshot?: string;
+    schema?: any[];
 }
 
 interface CrawlResult {
@@ -50,12 +51,15 @@ export default function ReaderPage() {
         setCrawlResult(null);
 
         try {
-            const READER_URL = process.env.NEXT_PUBLIC_READER_URL || "http://localhost:3002";
-            const endpoint = crawlMode ? `${READER_URL}/v1/crawl` : "/api/v1/scrape";
-
-            const body = crawlMode
-                ? { url: sanitizedUrl, maxPages, maxDepth: 2, render, screenshot }
-                : { url: sanitizedUrl, render, screenshot };
+            const endpoint = "/api/v1/scrape";
+            const body = {
+                url: sanitizedUrl,
+                render,
+                screenshot,
+                crawlMode,
+                maxPages: crawlMode ? maxPages : undefined,
+                maxDepth: 3 // Increased depth for "Full Scrape" feel
+            };
 
             const res = await fetch(endpoint, {
                 method: "POST",
@@ -94,8 +98,8 @@ export default function ReaderPage() {
         <div className="space-y-8">
             {/* HEADER */}
             <div>
-                <span className="label">TOOL / READER</span>
-                <h1 className="text-3xl font-heading mt-2">Web Scraper</h1>
+                <span className="label">TOOL / SCRAPER</span>
+                <h1 className="text-3xl font-heading mt-2">Phantom Scraper</h1>
                 <p className="text-sm text-[var(--ash)] mt-2">Extract clean content from any URL using stealth browsing.</p>
             </div>
 
@@ -181,7 +185,7 @@ export default function ReaderPage() {
                         ) : (
                             <>
                                 {crawlMode ? <Workflow size={18} /> : <Send size={18} />}
-                                {crawlMode ? "ACTIVATE CRAWLER" : "ACTIVATE READER"}
+                                {crawlMode ? "ACTIVATE CRAWLER" : "ACTIVATE SCRAPER"}
                             </>
                         )}
                     </button>
@@ -218,22 +222,35 @@ export default function ReaderPage() {
 
                     <div className="panel">
                         <div className="panel-header flex items-center justify-between">
-                            <div>
-                                <span className="label">EXTRACTED CONTENT</span>
-                                <h2 className="text-xl font-heading mt-1">{result.title}</h2>
-                                {result.metadata.siteName && (
-                                    <p className="text-xs text-[var(--ash)] mt-1">{result.metadata.siteName}</p>
+                            <div className="flex gap-4">
+                                <button className="label border-b-2 border-transparent hover:border-[var(--bone)] pb-1 transition-all">EXTRACTED CONTENT</button>
+                                {result.schema && result.schema.length > 0 && (
+                                    <button className="label text-[var(--signal-orange)] border-b-2 border-[var(--signal-orange)] pb-1">SCHEMA EXPLORER ({result.schema.length})</button>
                                 )}
                             </div>
-                            <button onClick={() => copyToClipboard(result.content)} className="btn-secondary flex items-center gap-2">
-                                {copied ? <Check size={14} /> : <Copy size={14} />}
-                                {copied ? "COPIED" : "COPY"}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => copyToClipboard(JSON.stringify(result.schema, null, 2))}
+                                    className="btn-secondary flex items-center gap-2 text-[10px]"
+                                >
+                                    JSON
+                                </button>
+                                <button onClick={() => copyToClipboard(result.content)} className="btn-secondary flex items-center gap-2">
+                                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                                    {copied ? "COPIED" : "COPY"}
+                                </button>
+                            </div>
                         </div>
                         <div className="panel-body">
-                            <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
-                                {result.content}
-                            </pre>
+                            {result.schema && result.schema.length > 0 ? (
+                                <pre className="font-mono text-[10px] text-[var(--signal-orange)]/80 whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed bg-black/30 p-4 rounded">
+                                    {JSON.stringify(result.schema, null, 2)}
+                                </pre>
+                            ) : (
+                                <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
+                                    {result.content}
+                                </pre>
+                            )}
                         </div>
                     </div>
                 </div>

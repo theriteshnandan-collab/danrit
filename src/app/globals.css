@@ -19,6 +19,14 @@
     --signal-green: #22C55E;
     --signal-red: #EF4444;
     --signal-amber: #F59E0B;
+    --signal-orange: #EA580C;
+
+    /* PREMIUM PALETTE (Refined - No Neon) */
+    --copper: #B45309;       /* Warm copper/bronze */
+    --amber-warm: #D97706;   /* Warm amber */
+    --slate-warm: #475569;   /* Warm slate blue */
+    --stone-dark: #1C1917;   /* Warm dark stone */
+    --cream: #FAFAF9;        /* Off-white cream */
 
     /* SPACING (4px baseline) */
     --space-1: 4px;
@@ -172,4 +180,14 @@
 ::selection {
   background: rgba(229, 229, 229, 0.2);
   color: white;
+}
+
+/* ANIMATIONS */
+@keyframes infinite-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 25s linear infinite;
 }

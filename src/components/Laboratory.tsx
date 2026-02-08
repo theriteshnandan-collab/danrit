@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Terminal, FileText, Mail, Camera, QrCode, Globe } from "lucide-react";
+import { Terminal, FileText, Mail, Camera, QrCode, Globe, Video } from "lucide-react";
 import PrecisionLoader from "./PrecisionLoader";
 import DataViewer from "./DataViewer";
 import { SharedApiResult } from "@/lib/types/schema";
 
-type EngineType = "scrape" | "pdf" | "mail" | "shot" | "qr" | "dns";
+type EngineType = "scrape" | "pdf" | "mail" | "shot" | "qr" | "dns" | "video";
 
 export default function Laboratory() {
     const [engine, setEngine] = useState<EngineType>("scrape");
@@ -57,6 +57,10 @@ export default function Laboratory() {
                     endpoint = "/api/v1/dns";
                     body = { domain, type: "A" };
                     break;
+                case "video":
+                    endpoint = "/api/v1/video/info";
+                    body = { url };
+                    break;
             }
 
             const res = await fetch(endpoint, {
@@ -104,11 +108,12 @@ export default function Laboratory() {
             <div className="flex items-center gap-1 p-2 border-b border-white/10 bg-[#000]">
                 {[
                     { id: "scrape", icon: Terminal, label: "Scrape" },
+                    { id: "video", icon: Video, label: "Video" },
                     { id: "pdf", icon: FileText, label: "PDF" },
-                    { id: "mail", icon: Mail, label: "Mail" },
                     { id: "shot", icon: Camera, label: "Shot" },
                     { id: "qr", icon: QrCode, label: "QR" },
                     { id: "dns", icon: Globe, label: "DNS" },
+                    { id: "mail", icon: Mail, label: "Mail" },
                 ].map((item) => (
                     <button
                         key={item.id}
@@ -133,12 +138,12 @@ export default function Laboratory() {
 
                 {/* Dynamic Inputs */}
                 <div className="flex-1 flex items-center gap-4">
-                    {(engine === "scrape" || engine === "pdf" || engine === "shot") && (
+                    {(engine === "scrape" || engine === "pdf" || engine === "shot" || engine === "video") && (
                         <input
                             type="text"
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
-                            placeholder="https://example.com"
+                            placeholder={engine === "video" ? "https://youtube.com/watch?v=..." : "https://example.com"}
                             className="flex-1 bg-transparent text-white font-mono text-xs outline-none placeholder:text-white/20"
                         />
                     )}

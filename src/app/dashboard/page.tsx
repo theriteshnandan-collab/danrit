@@ -57,35 +57,85 @@ async function DashboardContent() {
                 </div>
             </div>
 
-            {/* TOOLS GRID */}
+            {/* PRODUCTS GRID */}
             <div>
-                <span className="label">TOOLS</span>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] mt-4 bg-[var(--border)]">
-                    {/* READER */}
+                <span className="label">PRODUCTS</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[1px] mt-4 bg-[var(--border)]">
+                    {/* SCRAPER */}
                     <Link href="/dashboard/reader" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
-                        <FileText size={24} className="text-[var(--ash)] group-hover:text-[var(--bone)] transition-colors" />
-                        <h3 className="text-lg font-heading mt-4">READER</h3>
-                        <p className="text-xs text-[var(--ash)] mt-2">Extract content from any URL. Stealth mode enabled.</p>
+                        <FileText size={24} className="text-[var(--signal-orange)] group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">SCRAPER</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Extract content from any URL with stealth mode.</p>
                         <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
                             LAUNCH <ArrowRight size={12} />
                         </div>
                     </Link>
 
-                    {/* VIDEO (Disabled) */}
-                    <div className="panel p-6 opacity-40 cursor-not-allowed">
-                        <Video size={24} className="text-[var(--ash)]" />
+                    {/* VIDEO */}
+                    <Link href="/dashboard/video" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Video size={24} className="text-blue-500 group-hover:text-[var(--bone)] transition-colors" />
                         <h3 className="text-lg font-heading mt-4">VIDEO</h3>
                         <p className="text-xs text-[var(--ash)] mt-2">Download 4K video from YouTube, Twitter, Instagram.</p>
-                        <div className="flex items-center gap-1 mt-4 text-[8px] uppercase border border-[var(--ash)] px-2 py-1 w-fit">
-                            COMING SOON
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
                         </div>
-                    </div>
+                    </Link>
 
-                    {/* SYSTEMS */}
-                    <Link href="/dashboard/systems" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                    {/* PDF */}
+                    <Link href="/dashboard/pdf" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <FileText size={24} className="text-red-500 group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">PDF</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Convert any webpage to PDF document.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* SCREENSHOT */}
+                    <Link href="/dashboard/shot" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Cpu size={24} className="text-purple-500 group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">SCREENSHOT</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Capture full-page website screenshots.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* QR CODE */}
+                    <Link href="/dashboard/qr" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Cpu size={24} className="text-green-500 group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">QR CODE</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Generate high-resolution QR codes.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* DNS */}
+                    <Link href="/dashboard/dns" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Cpu size={24} className="text-cyan-500 group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">DNS</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Query DNS records for any domain.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* MAIL */}
+                    <Link href="/dashboard/mail" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
+                        <Cpu size={24} className="text-yellow-500 group-hover:text-[var(--bone)] transition-colors" />
+                        <h3 className="text-lg font-heading mt-4">MAIL</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Send transactional emails at scale.</p>
+                        <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
+                            LAUNCH <ArrowRight size={12} />
+                        </div>
+                    </Link>
+
+                    {/* API KEYS */}
+                    <Link href="/dashboard/vault" className="panel p-6 group hover:bg-[var(--border)] transition-colors">
                         <Cpu size={24} className="text-[var(--ash)] group-hover:text-[var(--bone)] transition-colors" />
-                        <h3 className="text-lg font-heading mt-4">SYSTEMS</h3>
-                        <p className="text-xs text-[var(--ash)] mt-2">Monitor remote microservices and server health.</p>
+                        <h3 className="text-lg font-heading mt-4">API KEYS</h3>
+                        <p className="text-xs text-[var(--ash)] mt-2">Manage your API keys and usage.</p>
                         <div className="flex items-center gap-1 mt-4 text-xs text-[var(--ash)] group-hover:text-[var(--bone)]">
                             VIEW <ArrowRight size={12} />
                         </div>

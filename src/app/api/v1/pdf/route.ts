@@ -17,6 +17,17 @@ export const POST = withAuth(async (req, { user_id }) => {
         const { url, format, print_background, wait_for, css, cookies } = json as any;
         // We cast to any because we are extending the schema dynamically here (or verify schema is updated)
 
+        // === CREDIT GATEKEEPER ===
+        const cap = await UsageService.checkCap(user_id, "pdf");
+        if (!cap.allowed) {
+            return NextResponse.json({
+                error: "Rate Limit",
+                message: cap.reason,
+                credits_remaining: cap.credits_remaining
+            }, { status: 429 });
+        }
+        // === END GATEKEEPER ===
+
         // 3. Use Unified Browser Service
         const browser = await BrowserService.getBrowser();
         const page = await browser.newPage();
