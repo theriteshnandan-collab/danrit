@@ -49,25 +49,33 @@ export class UsageService {
             .eq("id", user_id)
             .single();
 
-        // === SELF-HEALING: Create missing profile ===
+        // === SELF-HEALING: Create/Restore missing profile ===
         if (error || !profile) {
-            console.warn(`⚠️ Profile not found for ${user_id}. Creating default profile...`);
+            console.warn(`⚠️ Profile not found/fetch error for ${user_id}. Attempting NUCLEAR repair...`);
+
+            // Try UPSERT to handle race conditions where trigger might have just finished
             const { error: insertError } = await supabase
                 .from("profiles")
-                .insert({
+                .upsert({
                     id: user_id,
                     credits_balance: 50,
                     tier: "free",
                     daily_usage: {},
-                    last_usage_reset: new Date().toISOString()
-                });
+                    last_usage_reset: new Date().toISOString(),
+                    full_name: "Explorer", // Satisfy potential length constraint
+                    email: "user@danrit.tech" // Placeholder
+                }, { onConflict: 'id' });
 
             if (insertError) {
-                console.error("❌ Failed to create profile:", insertError);
-                return { allowed: false, reason: "Failed to initialize user profile. Please contact support." };
+                console.error("❌ NUCLEAR REPAIR FAILED:", insertError);
+                // Return exact error to UI so user can debug
+                return {
+                    allowed: false,
+                    reason: `Profile Init Failed: ${insertError.message} (Code: ${insertError.code})`
+                };
             }
 
-            // Re-fetch newly created profile
+            // Re-fetch newly created/updated profile
             const { data: newProfile } = await supabase
                 .from("profiles")
                 .select("credits_balance, tier, daily_usage, last_usage_reset")
@@ -75,10 +83,10 @@ export class UsageService {
                 .single();
 
             if (!newProfile) {
-                return { allowed: false, reason: "Profile creation failed. Please retry." };
+                return { allowed: false, reason: "Profile creation succeeded but fetch failed. Please retry." };
             }
             profile = newProfile;
-            console.log(`✅ Profile auto-created for ${user_id} with 50 credits.`);
+            console.log(`✅ NUCLEAR REPAIR SUCCESS: Profile synced for ${user_id}.`);
         }
 
         // Reset daily usage if new day
