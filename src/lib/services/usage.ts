@@ -12,12 +12,12 @@ const supabase = createClient(
 export const TOOL_CONFIG: Record<string, { cost: number; freeLimit: number }> = {
     dns: { cost: 0, freeLimit: Infinity },
     qr: { cost: 0, freeLimit: Infinity },
-    mail: { cost: 1, freeLimit: 10 },
-    scrape: { cost: 2, freeLimit: 20 },
-    pdf: { cost: 5, freeLimit: 5 },
-    shot: { cost: 5, freeLimit: 5 },
-    video_info: { cost: 5, freeLimit: 5 },
-    video_download: { cost: 10, freeLimit: 2 },
+    mail: { cost: 1, freeLimit: 100 },
+    scrape: { cost: 2, freeLimit: 50 },
+    pdf: { cost: 5, freeLimit: 20 },
+    shot: { cost: 5, freeLimit: 20 },
+    video_info: { cost: 5, freeLimit: 50 },
+    video_download: { cost: 10, freeLimit: 10 },
 };
 
 export interface CapCheckResult {
