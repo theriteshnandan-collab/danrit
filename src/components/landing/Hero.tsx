@@ -1,7 +1,28 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, Rocket } from "lucide-react";
+import { ArrowRight, Rocket, LayoutDashboard } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 
 export function Hero() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setIsLoggedIn(!!user);
+        };
+        checkSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsLoggedIn(!!session?.user);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [supabase.auth]);
+
     return (
         <section className="relative z-10 min-h-[85vh] flex flex-col justify-center items-center px-6 pt-28 pb-16 overflow-hidden">
 
@@ -47,11 +68,11 @@ export function Hero() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
-                        href="/login"
+                        href={isLoggedIn ? "/dashboard" : "/login"}
                         className="group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm uppercase tracking-wider hover:from-amber-500 hover:to-orange-500 transition-all shadow-lg shadow-orange-600/25"
                     >
-                        <Rocket size={18} />
-                        Enter Console
+                        {isLoggedIn ? <LayoutDashboard size={18} /> : <Rocket size={18} />}
+                        {isLoggedIn ? "Launch Console" : "Enter Console"}
                         <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link
