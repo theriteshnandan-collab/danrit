@@ -35,7 +35,17 @@ export default function VideoPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to fetch info");
+            if (!res.ok) {
+                // Parse detailed error (especially for Rate Limits)
+                let errorMsg = data.error || "Failed to fetch info";
+                if (data.message) {
+                    errorMsg += `: ${data.message}`;
+                }
+                if (data.credits_remaining !== undefined) {
+                    errorMsg += ` (Credits: ${data.credits_remaining})`;
+                }
+                throw new Error(errorMsg);
+            }
 
             setMetadata(data.data);
         } catch (err: any) {
@@ -56,7 +66,13 @@ export default function VideoPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to resolve stream");
+            if (!res.ok) {
+                // Parse detailed error
+                let errorMsg = data.error || "Failed to resolve stream";
+                if (data.message) errorMsg += `: ${data.message}`;
+                if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
+                throw new Error(errorMsg);
+            }
 
             if (data.url) {
                 window.open(data.url, "_blank");
