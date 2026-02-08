@@ -1,9 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Service Role Client (Ironclad: Secure context only)
+let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+// Sanitize: Remove wrapping quotes/whitespace which often happens in Vercel copy-paste
+serviceKey = serviceKey.replace(/^['"]|['"]$/g, '').trim();
+
+if (!serviceKey) {
+    console.error("❌ CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing or empty!");
+}
+
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    serviceKey
 );
 
 // =============================================
@@ -69,9 +78,10 @@ export class UsageService {
             if (insertError) {
                 console.error("❌ NUCLEAR REPAIR FAILED:", insertError);
                 // Return exact error to UI so user can debug
+                const keyPrefix = serviceKey ? serviceKey.substring(0, 5) + "..." : "MISSING";
                 return {
                     allowed: false,
-                    reason: `Profile Init Failed: ${insertError.message} (Code: ${insertError.code})`
+                    reason: `Profile Init Failed: ${insertError.message}. Key: ${keyPrefix}`
                 };
             }
 
