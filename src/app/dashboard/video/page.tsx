@@ -36,14 +36,11 @@ export default function VideoPage() {
 
             const data = await res.json();
             if (!res.ok) {
-                // Parse detailed error (especially for Rate Limits)
-                let errorMsg = data.error || "Failed to fetch info";
-                if (data.message) {
-                    errorMsg += `: ${data.message}`;
-                }
-                if (data.credits_remaining !== undefined) {
-                    errorMsg += ` (Credits: ${data.credits_remaining})`;
-                }
+                let errorMsg = data.error || "Analysis failed";
+                if (data.message) errorMsg += `: ${data.message}`;
+                if (data.details) errorMsg += ` | Details: ${data.details}`;
+                if (data.target) errorMsg += ` | Target: ${data.target}`;
+                if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
                 throw new Error(errorMsg);
             }
 
@@ -70,6 +67,8 @@ export default function VideoPage() {
                 // Parse detailed error
                 let errorMsg = data.error || "Failed to resolve stream";
                 if (data.message) errorMsg += `: ${data.message}`;
+                if (data.details) errorMsg += ` | Details: ${data.details}`;
+                if (data.target) errorMsg += ` | Target: ${data.target}`;
                 if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
                 throw new Error(errorMsg);
             }

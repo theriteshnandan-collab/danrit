@@ -74,6 +74,8 @@ export default function ReaderPage() {
                 // Parse detailed error (especially for Rate Limits)
                 let errorMsg = data?.error || "Unknown Error";
                 if (data?.message) errorMsg += `: ${data.message}`;
+                if (data?.details) errorMsg += ` | Details: ${data.details}`;
+                if (data?.target) errorMsg += ` | Target: ${data.target}`;
                 if (data?.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
                 throw new Error(`Server Error (${res.status}): ${errorMsg}`);
             }
