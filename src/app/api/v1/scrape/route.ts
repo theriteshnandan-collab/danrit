@@ -144,13 +144,13 @@ export const POST = withAuth(async (req, { user_id }) => {
                 });
             }
 
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : "Unknown Error";
-            console.error("[BRIDGE] Error:", error);
-            return NextResponse.json(
-                { error: message || "Failed to contact Reader Service" },
-                { status: 502 } // Bad Gateway
-            );
+        } catch (error: any) {
+            console.error("Reader Proxy Error:", error);
+            return NextResponse.json({
+                error: "Reader Service Unreachable",
+                details: error.message,
+                target: endpoint // <--- DEBUG: Reveal where we tried to go
+            }, { status: 502 });
         }
 
     } catch (error) {
