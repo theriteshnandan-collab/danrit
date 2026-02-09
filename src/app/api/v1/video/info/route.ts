@@ -26,7 +26,7 @@ export const POST = withAuth(async (req, { user_id }) => {
         }
         // === END GATEKEEPER ===
 
-        const READER_URL = process.env.DANRIT_READER_URL || "http://localhost:3002";
+        const READER_URL = UsageService.getReaderUrl();
 
         const response = await fetch(`${READER_URL}/v1/video/info`, {
             method: "POST",

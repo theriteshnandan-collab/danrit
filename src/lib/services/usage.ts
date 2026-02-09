@@ -263,6 +263,27 @@ export class UsageService {
             tier: profile?.tier ?? "free",
             daily_usage: profile?.daily_usage ?? {},
         };
+    /**
+     * Get the sanitized Reader URL (Microservice)
+     * Handles missing protocols and trailing slashes.
+     */
+    static getReaderUrl(): string {
+        let url = process.env.DANRIT_READER_URL || "http://localhost:3002";
+
+        // Remove quotes/whitespace
+        url = url.replace(/^['"]|['"]$/g, '').trim();
+
+        // Ensure protocol
+        if (!url.startsWith("http")) {
+            url = `https://${url}`;
+        }
+
+        // Remove trailing slash
+        if (url.endsWith("/")) {
+            url = url.slice(0, -1);
+        }
+
+        return url;
     }
 }
 

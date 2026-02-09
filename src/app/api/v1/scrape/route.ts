@@ -52,7 +52,7 @@ export const POST = withAuth(async (req, { user_id }) => {
         }
         // === END GATEKEEPER ===
 
-        const READER_URL = process.env.DANRIT_READER_URL || "http://localhost:3002";
+        const READER_URL = UsageService.getReaderUrl();
         const endpoint = crawlMode ? `${READER_URL}/v1/crawl` : `${READER_URL}/v1/scrape`;
 
         console.log(`[BRIDGE] Forwarding to ${endpoint} | Mode: ${crawlMode ? 'CRAWL' : 'SCRAPE'}`);
