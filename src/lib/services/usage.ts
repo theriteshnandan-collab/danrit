@@ -271,7 +271,8 @@ export class UsageService {
      * Handles missing protocols and trailing slashes.
      */
     static getReaderUrl(): string {
-        let url = process.env.DANRIT_READER_URL || "http://localhost:3002";
+        // NUCLEAR FALLBACK: Hardcoded for Production Stabilization
+        let url = process.env.DANRIT_READER_URL || "https://danrit-reader-production.up.railway.app";
 
         // Remove quotes/whitespace
         url = url.replace(/^['"]|['"]$/g, '').trim();
