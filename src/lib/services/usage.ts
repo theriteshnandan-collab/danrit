@@ -263,6 +263,8 @@ export class UsageService {
             tier: profile?.tier ?? "free",
             daily_usage: profile?.daily_usage ?? {},
         };
+    }
+
     /**
      * Get the sanitized Reader URL (Microservice)
      * Handles missing protocols and trailing slashes.
