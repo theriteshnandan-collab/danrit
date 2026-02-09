@@ -15,6 +15,7 @@ const supabase = createClient(
     serviceKey
 );
 
+// Force Rebuild to pick up ENV VARS (2026-02-09)
 // =============================================
 // TOOL COST & LIMIT CONFIGURATION
 // =============================================
