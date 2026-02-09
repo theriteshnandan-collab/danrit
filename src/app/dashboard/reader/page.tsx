@@ -70,6 +70,8 @@ export default function ReaderPage() {
             const isJson = res.headers.get("content-type")?.includes("application/json");
             const data = isJson ? await res.json() : null;
 
+            console.log("🔍 [DEBUG] Raw API Response:", data);
+
             if (!res.ok) {
                 // Parse detailed error (especially for Rate Limits)
                 let errorMsg = data?.error || "Unknown Error";
