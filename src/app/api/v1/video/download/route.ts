@@ -45,6 +45,13 @@ export const POST = withAuth(async (req, { user_id }) => {
         await UsageService.deductCredits(user_id, "video_download");
         await UsageService.recordTransaction(user_id, "video_download", TOOL_CONFIG["video_download"].cost);
 
+        // Wrap the raw video URL in our proxy to bypass 403/IP restrictions
+        if (data.url) {
+            const proxyUrl = `/api/v1/video/proxy?url=${encodeURIComponent(data.url)}`;
+            data.url = proxyUrl;
+            data.proxy = true;
+        }
+
         const duration = Math.round(performance.now() - startTime);
         return NextResponse.json(data, {
             headers: { "x-duration": String(duration) }

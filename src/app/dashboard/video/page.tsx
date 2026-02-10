@@ -74,7 +74,15 @@ export default function VideoPage() {
             }
 
             if (data.url) {
-                window.open(data.url, "_blank");
+                // Create invisible link to trigger download
+                const link = document.createElement('a');
+                link.href = data.url;
+                // If it's our proxy, the server sets the filename.
+                // If it's a direct link, we try to suggest one.
+                link.setAttribute('download', 'video.mp4');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
         } catch (err: any) {
             setError(err.message || "Download failed");
