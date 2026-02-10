@@ -122,27 +122,39 @@ export const POST = withAuth(async (req, { user_id }) => {
                 await UsageService.recordTransaction(user_id, "scrape", TOOL_CONFIG["scrape"].cost);
 
                 return NextResponse.json({
-                    status: "success",
-                    data: {
-                        title: result.title,
-                        content: result.content,
-                        textContent: result.textContent,
-                        url: result.url,
-                        screenshot: result.screenshot,
-                        schema: result.schema,
-                        metadata: {
-                            byline: result.byline,
-                            siteName: result.siteName,
-                            url: result.url
-                        },
-                        // DEVEX: Data Mine
-                        json_ld: result.jsonLd,
-                        links: result.links
-                    },
                     meta: {
-                        duration: Math.round(duration),
-                        engine: "danrit-reader-v1",
-                        mode: "stealth"
+                        status: 200,
+                        version: "danrit-phantom-v1",
+                        timestamp: new Date().toISOString(),
+                        processing_time_ms: Math.round(duration)
+                    },
+                    source: {
+                        url: result.url,
+                        domain: new URL(result.url).hostname,
+                        title: result.title,
+                        author: result.metadata.author,
+                        date_published: result.metadata.date
+                    },
+                    content: {
+                        markdown: result.content,
+                        html_clean: result.html, // Only if requested
+                        excerpt: result.metadata.description,
+                        language: "en" // Todo: auto-detect
+                    },
+                    deep_mine: {
+                        structured_data: result.jsonLd,
+                        social_graph: {
+                            og_image: result.metadata.image,
+                            site_name: result.metadata.siteName,
+                            type: result.metadata.type,
+                            keywords: result.metadata.keywords
+                        },
+                        hidden_state: result.hiddenState,
+                        outgoing_links: result.links
+                    },
+                    debug: {
+                        stealth_mode: true,
+                        engine: "phantom-crawler-v1"
                     }
                 });
             }
