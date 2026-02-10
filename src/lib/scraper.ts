@@ -46,10 +46,12 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
         // 1. Stealth Mode: Set realistic User-Agent (Fallback if plugin misses)
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        // PHANTOM PHASE 1: Stealth Entry
-        // Randomize Viewport
-        const width = 1920 + Math.floor(Math.random() * 100) - 50;
-        const height = 1080 + Math.floor(Math.random() * 100) - 50;
+        // PHANTOM PROTOCOL: Phase 1 (Stealth Entry)
+        console.log(`[PHANTOM] Engaging Target: ${url}`);
+
+        // Randomize Viewport (1366x768 -> 1920x1080)
+        const width = 1366 + Math.floor(Math.random() * 500);
+        const height = 768 + Math.floor(Math.random() * 300);
         await page.setViewport({ width, height });
 
         // 2. Smart Navigation: 'domcontentloaded' is faster. AdBlocker cleans the noise.
