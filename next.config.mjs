@@ -20,6 +20,7 @@ const nextConfig = {
             'puppeteer-extra-plugin-adblocker'
         ],
     },
+    poweredByHeader: false, // Hide "X-Powered-By: Next.js"
 };
 
 export default nextConfig;

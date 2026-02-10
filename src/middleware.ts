@@ -1,106 +1,63 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from "@supabase/ssr";
-import { updateSession } from '@/lib/supabase/middleware'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-    // 0. MAINTENANCE MODE CHECK (The Safety Lock)
-    // 0. MAINTENANCE MODE CHECK (DISABLED - OPEN ACCESS)
-    // RESCUE REDIRECT: If anyone tries to go to /maintenance, kick them to /
-    if (request.nextUrl.pathname === "/maintenance") {
-        return NextResponse.redirect(new URL("/", request.url));
+// Simple In-Memory Rate Limit (Fallback for now)
+// In production, use Upstash Redis for distributed state
+const RATE_LIMIT_MAP = new Map();
+
+export function middleware(request: NextRequest) {
+    const response = NextResponse.next();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+
+    // === 1. SECURITY HEADERS (The Shield) ===
+    response.headers.set('X-DNS-Prefetch-Control', 'on');
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+
+    // === 2. CORS (The Gate) ===
+    // Allow specific origins or same-origin
+    const origin = request.headers.get('origin');
+    if (origin && (origin.includes('danrit.tech') || origin.includes('localhost'))) {
+        response.headers.set('Access-Control-Allow-Origin', origin);
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     }
 
-    /*
-    if (process.env.MAINTENANCE_MODE === "true") {
-        // ... (Disabled logic)
-    }
-    */
+    // === 3. RATE LIMITING (The Valve) ===
+    // Limit: 100 requests per minute per IP for API routes
+    if (request.nextUrl.pathname.startsWith('/api')) {
+        const now = Date.now();
+        const windowMs = 60 * 1000; // 1 minute
+        const limit = 100;
 
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.error("❌ FATAL: SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables.");
-        return NextResponse.json({ error: "Server Misconfiguration: Missing Service Role Key" }, { status: 500 });
-    }
-    // 1. API Route Protection & Handling
-    if (request.nextUrl.pathname.startsWith('/api/v1/')) {
+        const record = RATE_LIMIT_MAP.get(ip) || { count: 0, startTime: now };
 
-        // A. API Key Check (External Access)
-        const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer sk_live_')) {
-            const token = authHeader.split('Bearer ')[1];
-            const tokenHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
-            const hashArray = Array.from(new Uint8Array(tokenHash));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        if (now - record.startTime > windowMs) {
+            // Reset window
+            record.count = 1;
+            record.startTime = now;
+        } else {
+            record.count++;
+        }
 
-            const supabase = createServerClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.SUPABASE_SERVICE_ROLE_KEY!,
-                { cookies: { getAll() { return [] }, setAll() { } } }
+        RATE_LIMIT_MAP.set(ip, record);
+
+        if (record.count > limit) {
+            return new NextResponse(
+                JSON.stringify({ error: "Rate Limit Exceeded", retry_after: Math.ceil((windowMs - (now - record.startTime)) / 1000) }),
+                { status: 429, headers: { 'Content-Type': 'application/json' } }
             );
-
-            const { data: keyData, error: keyError } = await supabase
-                .from('api_keys')
-                .select('user_id')
-                .eq('key_hash', hashHex)
-                .single();
-
-            if (keyError || !keyData) {
-                return new NextResponse(
-                    JSON.stringify({ error: 'Invalid API Key' }),
-                    { status: 401, headers: { 'content-type': 'application/json' } }
-                );
-            }
-
-            const requestHeaders = new Headers(request.headers);
-            requestHeaders.set('x-user-id', keyData.user_id);
-            return NextResponse.next({ request: { headers: requestHeaders } });
         }
 
-        // B. Session Check (Internal/Dashboard Access - "The Bypass")
-        // We defer to Supabase Middleware to validate the session, then check if we have a user.
-        // However, Supabase middleware returns a Response object. 
-        // We will manually check the session here using the Request cookies.
-
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    getAll() { return request.cookies.getAll() },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-                    },
-                },
-            }
-        );
-
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (user) {
-            // Authorized via Session (Laboratory/Dashboard)
-            const requestHeaders = new Headers(request.headers);
-            requestHeaders.set('x-user-id', user.id);
-            return NextResponse.next({ request: { headers: requestHeaders } });
-        }
-
-        // C. Fail if neither
-        return new NextResponse(
-            JSON.stringify({ error: 'Missing API Key or Active Session' }),
-            { status: 401, headers: { 'content-type': 'application/json' } }
-        );
+        response.headers.set('X-RateLimit-Limit', String(limit));
+        response.headers.set('X-RateLimit-Remaining', String(limit - record.count));
     }
 
-    return await updateSession(request)
+    return response;
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * Feel free to modify this pattern to include more paths.
-         */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-    ],
-}
+    matcher: '/api/:path*',
+};
