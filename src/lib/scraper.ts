@@ -126,7 +126,8 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
                     image: getMeta('og:image') || getMeta('twitter:image'),
                     site_name: getMeta('og:site_name'),
                     type: getMeta('og:type'),
-                    keywords: getMeta('keywords')
+                    keywords: getMeta('keywords'),
+                    date: getMeta('article:published_time') || getMeta('date')
                 }
             };
         });
