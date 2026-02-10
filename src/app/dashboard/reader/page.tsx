@@ -44,6 +44,7 @@ export default function ReaderPage() {
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<'content' | 'json' | 'links' | 'metadata'>('content');
+    const [isMaximized, setIsMaximized] = useState(false);
 
     async function handleScrape() {
         if (!url) return;
@@ -235,8 +236,8 @@ export default function ReaderPage() {
                     )}
 
                     {/* RESULT TABS */}
-                    <div className="panel">
-                        <div className="panel-header flex items-center justify-between overflow-x-auto">
+                    <div className={`panel transition-all duration-300 ${isMaximized ? 'fixed inset-4 z-50 shadow-2xl flex flex-col' : ''}`}>
+                        <div className="panel-header flex items-center justify-between overflow-x-auto shrink-0">
                             <div className="flex gap-6">
                                 <button
                                     onClick={() => setActiveTab('content')}
@@ -268,6 +269,13 @@ export default function ReaderPage() {
                                 </button>
                             </div>
                             <div className="flex gap-2">
+                                <button
+                                    onClick={() => setIsMaximized(!isMaximized)}
+                                    className="btn-secondary flex items-center gap-2 text-[10px]"
+                                    title={isMaximized ? "Minimize" : "Maximize view"}
+                                >
+                                    {isMaximized ? "MINIMIZE" : "EXPAND"}
+                                </button>
                                 <button onClick={() => copyToClipboard(JSON.stringify(result, null, 2))} className="btn-secondary flex items-center gap-2 text-[10px]">
                                     FULL JSON
                                 </button>
@@ -277,19 +285,19 @@ export default function ReaderPage() {
                                 </button>
                             </div>
                         </div>
-                        <div className="panel-body">
+                        <div className={`panel-body ${isMaximized ? 'flex-1 overflow-hidden p-0' : ''}`}>
                             {activeTab === 'content' && (
-                                <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
+                                <pre className={`font-mono text-xs text-[var(--ash)] whitespace-pre-wrap ${isMaximized ? 'h-full p-6' : 'max-h-[500px]'} overflow-y-auto leading-relaxed`}>
                                     {result.content}
                                 </pre>
                             )}
                             {activeTab === 'json' && result.json_ld && (
-                                <pre className="font-mono text-[10px] text-[var(--signal-orange)]/80 whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed bg-black/30 p-4 rounded">
+                                <pre className={`font-mono text-[10px] text-[var(--signal-orange)]/80 whitespace-pre-wrap ${isMaximized ? 'h-full p-6' : 'max-h-[500px] bg-black/30 p-4 rounded'} overflow-y-auto leading-relaxed`}>
                                     {JSON.stringify(result.json_ld, null, 2)}
                                 </pre>
                             )}
                             {activeTab === 'links' && result.links && (
-                                <div className="max-h-[500px] overflow-y-auto space-y-2">
+                                <div className={`${isMaximized ? 'h-full p-6' : 'max-h-[500px]'} overflow-y-auto space-y-2`}>
                                     {result.links.map((link, i) => (
                                         <div key={i} className="flex items-center gap-2 text-xs font-mono text-[var(--ash)] border-b border-[var(--border)] pb-2 last:border-0">
                                             <span className="text-[var(--bone)] opacity-50">{i + 1}.</span>
@@ -301,15 +309,17 @@ export default function ReaderPage() {
                                 </div>
                             )}
                             {activeTab === 'metadata' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.entries(result.metadata).map(([key, value]) => (
-                                        value && (
-                                            <div key={key} className="border border-[var(--border)] p-3 rounded">
-                                                <div className="label text-[10px] opacity-70 mb-1">{key}</div>
-                                                <div className="text-xs font-mono text-[var(--bone)] break-words">{String(value)}</div>
-                                            </div>
-                                        )
-                                    ))}
+                                <div className={`${isMaximized ? 'h-full p-6' : ''} overflow-y-auto`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {Object.entries(result.metadata).map(([key, value]) => (
+                                            value && (
+                                                <div key={key} className="border border-[var(--border)] p-3 rounded">
+                                                    <div className="label text-[10px] opacity-70 mb-1">{key}</div>
+                                                    <div className="text-xs font-mono text-[var(--bone)] break-words">{String(value)}</div>
+                                                </div>
+                                            )
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
