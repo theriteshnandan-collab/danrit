@@ -19,7 +19,12 @@ export interface ScrapeResult {
         date?: string;
         description?: string;
         image?: string;
+        siteName?: string;
+        type?: string;
+        keywords?: string[];
     };
+    jsonLd?: any[];
+    links?: string[];
 }
 
 export async function scrapeUrl(url: string, options: { format: 'markdown' | 'html' | 'text' } = { format: 'markdown' }): Promise<ScrapeResult> {
@@ -50,13 +55,47 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
             throw new Error("Failed to parse content from page.");
         }
 
-        // Extract Metadata
+        // --- DEVEX UPGRADE: Structured Data Extraction ---
+
+        // 1. JSON-LD Extraction
+        interface JsonLd {
+            [key: string]: any;
+        }
+
+        const jsonLd: JsonLd[] = [];
+        const scriptTags = doc.window.document.querySelectorAll('script[type="application/ld+json"]');
+        scriptTags.forEach(script => {
+            try {
+                if (script.textContent) {
+                    const data = JSON.parse(script.textContent);
+                    jsonLd.push(data);
+                }
+            } catch (e) {
+                console.warn("Failed to parse JSON-LD block:", e);
+            }
+        });
+
+        // 2. Rich Metadata (OpenGraph + Twitter)
+        const getMeta = (prop: string) => doc.window.document.querySelector(`meta[property="${prop}"], meta[name="${prop}"]`)?.getAttribute('content') || undefined;
+
         const metadata = {
-            author: article.byline || undefined,
-            description: article.excerpt || undefined,
-            date: doc.window.document.querySelector('meta[property="article:published_time"]')?.getAttribute('content') || undefined,
-            image: doc.window.document.querySelector('meta[property="og:image"]')?.getAttribute('content') || undefined
+            author: article.byline || getMeta('author') || getMeta('twitter:creator') || undefined,
+            description: article.excerpt || getMeta('description') || getMeta('og:description') || undefined,
+            date: getMeta('article:published_time') || getMeta('date') || undefined,
+            image: getMeta('og:image') || getMeta('twitter:image') || undefined,
+            siteName: getMeta('og:site_name') || undefined,
+            type: getMeta('og:type') || 'website',
+            keywords: getMeta('keywords') ? getMeta('keywords')?.split(',').map(k => k.trim()) : undefined
         };
+
+        // 3. Link Extraction (Outgoing)
+        const links: string[] = [];
+        doc.window.document.querySelectorAll('a[href]').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href && href.startsWith('http')) {
+                links.push(href);
+            }
+        });
 
         // Convert to Markdown if requested
         let finalContent = article.content || '';
@@ -72,7 +111,9 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
             title: article.title || 'Untitled',
             content: finalContent,
             html: options.format === 'html' ? (article.content || '') : undefined,
-            metadata
+            metadata,
+            jsonLd: jsonLd.length > 0 ? jsonLd : undefined,
+            links: links.length > 0 ? links : undefined
         };
 
     } catch (error) {

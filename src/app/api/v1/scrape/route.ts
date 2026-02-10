@@ -134,7 +134,10 @@ export const POST = withAuth(async (req, { user_id }) => {
                             byline: result.byline,
                             siteName: result.siteName,
                             url: result.url
-                        }
+                        },
+                        // DEVEX: Data Mine
+                        json_ld: result.jsonLd,
+                        links: result.links
                     },
                     meta: {
                         duration: Math.round(duration),
