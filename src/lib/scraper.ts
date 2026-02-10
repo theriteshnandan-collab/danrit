@@ -53,7 +53,43 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
         await page.setViewport({ width, height });
 
         // 2. Smart Navigation: 'domcontentloaded' is faster. AdBlocker cleans the noise.
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        // PHANTOM PROTOCOL: Phase 1 (Stealth Entry)
+        console.log(`[PHANTOM] Engaging Target: ${url}`);
+
+        // Randomize Viewport (1366x768 -> 1920x1080)
+        const width = 1366 + Math.floor(Math.random() * 500);
+        const height = 768 + Math.floor(Math.random() * 300);
+        await page.setViewport({ width, height });
+
+        // NAVIGATION STRATEGY: Conqueror Mode (SPA Support)
+        // We wait for networkidle2 (no more than 2 connections for 500ms) to ensure hydration.
+        try {
+            await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
+        } catch (e) {
+            console.warn(`[PHANTOM] Navigation timeout, proceeding with partial load.`);
+        }
+
+        // Force Scroll (Trigger Hydration/Lazy Loading)
+        await page.evaluate(async () => {
+            await new Promise<void>((resolve) => {
+                let totalHeight = 0;
+                const distance = 100;
+                const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+
+                    if (totalHeight >= scrollHeight) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 50);
+            });
+        });
+
+        // Wait a beat for post-scroll hydration
+        await new Promise(r => setTimeout(r, 1000));
+
 
         // PHANTOM PHASE 1.5: Human Presence Simulation
         // Move mouse in a Bezier curve to center
