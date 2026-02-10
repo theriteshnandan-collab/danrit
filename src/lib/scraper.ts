@@ -58,10 +58,7 @@ export async function scrapeUrl(url: string, options: { format: 'markdown' | 'ht
         // PHANTOM PROTOCOL: Phase 1 (Stealth Entry)
         console.log(`[PHANTOM] Engaging Target: ${url}`);
 
-        // Randomize Viewport (1366x768 -> 1920x1080)
-        const width = 1366 + Math.floor(Math.random() * 500);
-        const height = 768 + Math.floor(Math.random() * 300);
-        await page.setViewport({ width, height });
+
 
         // NAVIGATION STRATEGY: Conqueror Mode (SPA Support)
         // We wait for networkidle2 (no more than 2 connections for 500ms) to ensure hydration.

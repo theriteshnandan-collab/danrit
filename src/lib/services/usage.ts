@@ -217,6 +217,34 @@ export class UsageService {
         }
     }
 
+    /**
+     * Logs an API request for APM/Debugging.
+     */
+    static async logRequest(data: {
+        user_id: string;
+        endpoint: string;
+        method: string;
+        status_code: number;
+        duration_ms: number;
+    }) {
+        try {
+            const { error } = await supabase.from("usage_logs").insert({
+                user_id: data.user_id,
+                endpoint: data.endpoint,
+                method: data.method,
+                status_code: data.status_code,
+                duration_ms: data.duration_ms,
+                cost: 0 // Default cost 0 for simple logging
+            });
+
+            if (error) {
+                console.warn("⚠️ Failed to log request:", error.message);
+            }
+        } catch (e) {
+            console.warn("⚠️ Failed to log request (Exception):", e);
+        }
+    }
+
     static async getUserLogs(user_id: string, limit: number = 10) {
         const { data } = await supabase
             .from("usage_logs")
@@ -290,4 +318,3 @@ export class UsageService {
         return url;
     }
 }
-
