@@ -7,14 +7,20 @@ interface ScrapeResult {
     title: string;
     content: string;
     textContent: string;
-    url: string; // Lifted for easier access
+    url: string;
     metadata: {
         byline: string | null;
         siteName: string | null;
         url: string;
+        description?: string;
+        image?: string;
+        type?: string;
+        keywords?: string[];
     };
     screenshot?: string;
     schema?: any[];
+    json_ld?: any[];
+    links?: string[];
 }
 
 interface CrawlResult {
@@ -37,6 +43,7 @@ export default function ReaderPage() {
     const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [activeTab, setActiveTab] = useState<'content' | 'json' | 'links' | 'metadata'>('content');
 
     async function handleScrape() {
         if (!url) return;
@@ -227,20 +234,42 @@ export default function ReaderPage() {
                         </div>
                     )}
 
+                    {/* RESULT TABS */}
                     <div className="panel">
-                        <div className="panel-header flex items-center justify-between">
-                            <div className="flex gap-4">
-                                <button className="label border-b-2 border-transparent hover:border-[var(--bone)] pb-1 transition-all">EXTRACTED CONTENT</button>
-                                {result.schema && result.schema.length > 0 && (
-                                    <button className="label text-[var(--signal-orange)] border-b-2 border-[var(--signal-orange)] pb-1">SCHEMA EXPLORER ({result.schema.length})</button>
+                        <div className="panel-header flex items-center justify-between overflow-x-auto">
+                            <div className="flex gap-6">
+                                <button
+                                    onClick={() => setActiveTab('content')}
+                                    className={`label border-b-2 pb-1 transition-all ${activeTab === 'content' ? 'border-[var(--signal-orange)] text-[var(--signal-orange)]' : 'border-transparent hover:border-[var(--bone)]'}`}
+                                >
+                                    CONTENT
+                                </button>
+                                {result.json_ld && result.json_ld.length > 0 && (
+                                    <button
+                                        onClick={() => setActiveTab('json')}
+                                        className={`label border-b-2 pb-1 transition-all ${activeTab === 'json' ? 'border-[var(--signal-orange)] text-[var(--signal-orange)]' : 'border-transparent hover:border-[var(--bone)]'}`}
+                                    >
+                                        JSON-LD ({result.json_ld.length})
+                                    </button>
                                 )}
+                                {result.links && result.links.length > 0 && (
+                                    <button
+                                        onClick={() => setActiveTab('links')}
+                                        className={`label border-b-2 pb-1 transition-all ${activeTab === 'links' ? 'border-[var(--signal-orange)] text-[var(--signal-orange)]' : 'border-transparent hover:border-[var(--bone)]'}`}
+                                    >
+                                        LINKS ({result.links.length})
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setActiveTab('metadata')}
+                                    className={`label border-b-2 pb-1 transition-all ${activeTab === 'metadata' ? 'border-[var(--signal-orange)] text-[var(--signal-orange)]' : 'border-transparent hover:border-[var(--bone)]'}`}
+                                >
+                                    METADATA
+                                </button>
                             </div>
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => copyToClipboard(JSON.stringify(result.schema, null, 2))}
-                                    className="btn-secondary flex items-center gap-2 text-[10px]"
-                                >
-                                    JSON
+                                <button onClick={() => copyToClipboard(JSON.stringify(result, null, 2))} className="btn-secondary flex items-center gap-2 text-[10px]">
+                                    FULL JSON
                                 </button>
                                 <button onClick={() => copyToClipboard(result.content)} className="btn-secondary flex items-center gap-2">
                                     {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -249,14 +278,39 @@ export default function ReaderPage() {
                             </div>
                         </div>
                         <div className="panel-body">
-                            {result.schema && result.schema.length > 0 ? (
-                                <pre className="font-mono text-[10px] text-[var(--signal-orange)]/80 whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed bg-black/30 p-4 rounded">
-                                    {JSON.stringify(result.schema, null, 2)}
-                                </pre>
-                            ) : (
+                            {activeTab === 'content' && (
                                 <pre className="font-mono text-xs text-[var(--ash)] whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed">
                                     {result.content}
                                 </pre>
+                            )}
+                            {activeTab === 'json' && result.json_ld && (
+                                <pre className="font-mono text-[10px] text-[var(--signal-orange)]/80 whitespace-pre-wrap max-h-[500px] overflow-y-auto leading-relaxed bg-black/30 p-4 rounded">
+                                    {JSON.stringify(result.json_ld, null, 2)}
+                                </pre>
+                            )}
+                            {activeTab === 'links' && result.links && (
+                                <div className="max-h-[500px] overflow-y-auto space-y-2">
+                                    {result.links.map((link, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs font-mono text-[var(--ash)] border-b border-[var(--border)] pb-2 last:border-0">
+                                            <span className="text-[var(--bone)] opacity-50">{i + 1}.</span>
+                                            <a href={link} target="_blank" rel="noreferrer" className="hover:text-[var(--signal-orange)] truncate underline decoration-dotted">
+                                                {link}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {activeTab === 'metadata' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {Object.entries(result.metadata).map(([key, value]) => (
+                                        value && (
+                                            <div key={key} className="border border-[var(--border)] p-3 rounded">
+                                                <div className="label text-[10px] opacity-70 mb-1">{key}</div>
+                                                <div className="text-xs font-mono text-[var(--bone)] break-words">{String(value)}</div>
+                                            </div>
+                                        )
+                                    ))}
+                                </div>
                             )}
                         </div>
                     </div>
