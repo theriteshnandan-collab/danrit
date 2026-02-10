@@ -132,25 +132,25 @@ export const POST = withAuth(async (req, { user_id }) => {
                         url: result.url,
                         domain: new URL(result.url).hostname,
                         title: result.title,
-                        author: result.metadata.author,
-                        date_published: result.metadata.date
+                        author: result.metadata?.author || null,
+                        date_published: result.metadata?.date || null
                     },
                     content: {
                         markdown: result.content,
                         html_clean: result.html, // Only if requested
-                        excerpt: result.metadata.description,
+                        excerpt: result.metadata?.description || null,
                         language: "en" // Todo: auto-detect
                     },
                     deep_mine: {
-                        structured_data: result.jsonLd,
+                        structured_data: result.jsonLd || [],
                         social_graph: {
-                            og_image: result.metadata.image,
-                            site_name: result.metadata.siteName,
-                            type: result.metadata.type,
-                            keywords: result.metadata.keywords
+                            og_image: result.metadata?.image || null,
+                            site_name: result.metadata?.siteName || null,
+                            type: result.metadata?.type || null,
+                            keywords: result.metadata?.keywords || []
                         },
-                        hidden_state: result.hiddenState,
-                        outgoing_links: result.links
+                        hidden_state: result.hiddenState || null,
+                        outgoing_links: result.links || []
                     },
                     debug: {
                         stealth_mode: true,
