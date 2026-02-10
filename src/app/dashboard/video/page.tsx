@@ -55,6 +55,7 @@ export default function VideoPage() {
     async function handleDownload() {
         if (!url) return;
         setDownloading(true);
+        setError(null);
         try {
             const res = await fetch("/api/v1/video/download", {
                 method: "POST",
@@ -62,28 +63,37 @@ export default function VideoPage() {
                 body: JSON.stringify({ url })
             });
 
-            const data = await res.json();
             if (!res.ok) {
-                // Parse detailed error
-                let errorMsg = data.error || "Failed to resolve stream";
+                // If error, the response is JSON
+                const data = await res.json();
+                let errorMsg = data.error || "Failed to download video";
                 if (data.message) errorMsg += `: ${data.message}`;
-                if (data.details) errorMsg += ` | Details: ${data.details}`;
-                if (data.target) errorMsg += ` | Target: ${data.target}`;
                 if (data.credits_remaining !== undefined) errorMsg += ` (Credits: ${data.credits_remaining})`;
                 throw new Error(errorMsg);
             }
 
-            if (data.url) {
-                // Create invisible link to trigger download
-                const link = document.createElement('a');
-                link.href = data.url;
-                // If it's our proxy, the server sets the filename.
-                // If it's a direct link, we try to suggest one.
-                link.setAttribute('download', 'video.mp4');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            // 🔥 SUCCESS: The response is a binary stream (video bytes)
+            const blob = await res.blob();
+
+            // Extract filename from Content-Disposition header
+            const disposition = res.headers.get("content-disposition");
+            let filename = "danrit-video.mp4";
+            if (disposition) {
+                const match = disposition.match(/filename="?([^"]+)"?/);
+                if (match && match[1]) filename = match[1];
             }
+
+            // Create a download link from the blob
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Cleanup the blob URL after download starts
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
         } catch (err: any) {
             setError(err.message || "Download failed");
         } finally {

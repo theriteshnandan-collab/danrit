@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scrapeUrl } from "@/lib/scraper";
+// Scraping is handled by Railway Engine V2 — no local scraper needed
 import { z } from "zod";
 import { UsageService, TOOL_CONFIG } from "@/lib/services/usage";
 import { withAuth } from "@/lib/api/handler";
